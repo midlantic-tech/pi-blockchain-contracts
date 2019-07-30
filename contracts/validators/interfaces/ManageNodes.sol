@@ -54,10 +54,10 @@ contract ManageNodes {
         }
         emisorAddress = (address(0x0000000000000000000000000000000000000010));
         currentValidatorPrice = 6600000000000000000; // Value of the 11th node
-        purchaseValidatorPrice = 7260000000000000000; // Purchase price of the 11th value
+        purchaseValidatorPrice = 6666000000000000000; // Purchase price of the 11th value
         purchaseCommission[purchaseValidatorPrice] = currentValidatorPrice;
         currentValidatorPrice = 5500000000000000000; // Value of the N-1 node
-        sellValidatorPrice = 4455000000000000000; // Sell price of the 11th value
+        sellValidatorPrice = 5445000000000000000; // Sell price of the 11th value
         sellCommission[sellValidatorPrice] = currentValidatorPrice;
     }
 
@@ -155,7 +155,7 @@ contract ManageNodes {
         uint f = e.add(c);
         currentValidatorPrice = e.mul(f).div(d);
         currentValidatorPrice = currentValidatorPrice.mul(1 ether).div(100000);
-        purchaseValidatorPrice = currentValidatorPrice.mul(11).div(10);
+        purchaseValidatorPrice = currentValidatorPrice.mul(101).div(100);
         purchaseCommission[purchaseValidatorPrice] = currentValidatorPrice;
         nodos--;
         e = nodos.mul(c);
