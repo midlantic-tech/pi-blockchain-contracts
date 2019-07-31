@@ -60,7 +60,7 @@ contract PiFiatToken is IRC223, IERC20 {
     /// @param _value amount of token for the order
     /// @param receiving address of the token to buy (address(0) when buying PI)
     /// @param exchangeAddress address of the exchange to set the order
-    function setDexOrder(uint _value, address receiving, uint price, address exchangeAddress) public {
+    function setDexOrder(uint _value, address receiving, uint price, address exchangeAddress) public returns(bytes32){
         require(balances[msg.sender] >= _value, "No balance");
         address _to = address(exchangeAddress);
         address payable _from = msg.sender;
@@ -76,10 +76,12 @@ contract PiFiatToken is IRC223, IERC20 {
         balances[_to] = balances[_to].add(_value);
         if(codeLength>0) {
             PIDEX dex = PIDEX(_to);
-            dex.setTokenOrder(_from, _value, receiving, price);
+            bytes32 orderId = dex.setTokenOrder(_from, _value, receiving, price);
         }
         emit Transfer(_from, _to, _value);
         emit Transfer(_from, _to, _value, empty);
+
+        return orderId;
     }
 
     /// @dev Transfer token
