@@ -34,7 +34,7 @@ contract PIDEX is ERC223ReceivingContract {
 
     event SetOrder(address, address, address, uint, uint, bytes32);
     event CancelOrder(address, address, address, uint, uint, bytes32);
-    event Deal(bytes32, bytes32);
+    event Deal(bytes32, address, bytes32, address);
 
     /// @dev set an order selling PI
     /// @param receiving address of the token to buy
@@ -127,7 +127,7 @@ contract PIDEX is ERC223ReceivingContract {
         orders[orderA].dealed = true;
         orders[orderB].dealed = true;
 
-        emit Deal(orderA, orderB);
+        emit Deal(orderA, orders[orderA].owner, orderB, orders[orderB].owner);
 
         return newOrderId;
     }
