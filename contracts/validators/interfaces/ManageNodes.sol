@@ -23,9 +23,9 @@ contract ManageNodes {
     mapping(uint => uint) public sellCommission;
     mapping(uint => uint) public requiredBalance;
     address payable[] public nodesArray;
-    uint public currentValidatorPrice;
-    uint public sellValidatorPrice;
-    uint public purchaseValidatorPrice;
+    uint public currentNodePrice;
+    uint public sellNodePrice;
+    uint public purchaseNodePrice;
     uint public nodesValue;
     uint public maxValidators;
     uint public globalIndex;
@@ -53,12 +53,12 @@ contract ManageNodes {
             nodesValue += 1 ether;
         }
         emisorAddress = (address(0x0000000000000000000000000000000000000010));
-        currentValidatorPrice = 6600000000000000000; // Value of the 11th node
-        purchaseValidatorPrice = 6666000000000000000; // Purchase price of the 11th value
-        purchaseCommission[purchaseValidatorPrice] = currentValidatorPrice;
-        currentValidatorPrice = 5500000000000000000; // Value of the N-1 node
-        sellValidatorPrice = 5445000000000000000; // Sell price of the 11th value
-        sellCommission[sellValidatorPrice] = currentValidatorPrice;
+        currentNodePrice = 6600000000000000000; // Value of the 11th node
+        purchaseNodePrice = 6666000000000000000; // Purchase price of the 11th value
+        purchaseCommission[purchaseNodePrice] = currentNodePrice;
+        currentNodePrice = 5500000000000000000; // Value of the N-1 node
+        sellNodePrice = 5445000000000000000; // Sell price of the 11th value
+        sellCommission[sellNodePrice] = currentNodePrice;
     }
 
     /// @dev Set RelaySet contract's address when deployed
@@ -88,15 +88,15 @@ contract ManageNodes {
 
     /// @dev Purchase the next node
     function purchaseNode() external payable isNotNode(msg.sender) {
-        require(msg.value == purchaseValidatorPrice);
-        nodes[msg.sender].payedPrice = purchaseValidatorPrice;
-        nodesValue += purchaseValidatorPrice;
+        require(msg.value == purchaseNodePrice);
+        nodes[msg.sender].payedPrice = purchaseNodePrice;
+        nodesValue += purchaseNodePrice;
         nodesArray.push(msg.sender);
         globalIndex++;
         nodes[msg.sender].index = globalIndex;
         nodes[msg.sender].isHolder = true;
-        emisorAddress.transfer(purchaseValidatorPrice.sub(purchaseCommission[purchaseValidatorPrice]));
-        updateValidatorPrice();
+        emisorAddress.transfer(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]));
+        updateNodePrice();
     }
 
     /// @dev Sell the node you own
@@ -104,10 +104,10 @@ contract ManageNodes {
         require(!nodes[msg.sender].isValidator);
         removeFromArray(msg.sender);
         globalIndex--;
-        msg.sender.transfer(sellValidatorPrice);
-        emisorAddress.transfer(sellCommission[sellValidatorPrice].sub(sellValidatorPrice));
+        msg.sender.transfer(sellNodePrice);
+        emisorAddress.transfer(sellCommission[sellNodePrice].sub(sellNodePrice));
         nodes[msg.sender].isHolder = false;
-        updateValidatorPrice();
+        updateNodePrice();
     }
 
     /// @dev Ballot contract call this function when there is successful ballot to allow the change of validator
@@ -145,7 +145,7 @@ contract ManageNodes {
     }
 
     /// @dev Update node's price when somebody buy/sell a node
-    function updateValidatorPrice() internal {
+    function updateNodePrice() internal {
         uint nodos = globalIndex;
         uint a = 100000;
         uint b = 200000;
@@ -153,18 +153,18 @@ contract ManageNodes {
         uint d = b.div(10);
         uint e = nodos.mul(c);
         uint f = e.add(c);
-        currentValidatorPrice = e.mul(f).div(d);
-        currentValidatorPrice = currentValidatorPrice.mul(1 ether).div(100000);
-        purchaseValidatorPrice = currentValidatorPrice.mul(101).div(100);
-        purchaseCommission[purchaseValidatorPrice] = currentValidatorPrice;
+        currentNodePrice = e.mul(f).div(d);
+        currentNodePrice = currentNodePrice.mul(1 ether).div(100000);
+        purchaseNodePrice = currentNodePrice.mul(101).div(100);
+        purchaseCommission[purchaseNodePrice] = currentNodePrice;
         nodos--;
         e = nodos.mul(c);
         f = e.add(c);
-        currentValidatorPrice = e.mul(f).div(d);
-        currentValidatorPrice = currentValidatorPrice.mul(1 ether).div(100000);
-        sellValidatorPrice = currentValidatorPrice.mul(99).div(100);
-        sellCommission[sellValidatorPrice] = currentValidatorPrice;
-        requiredBalance[globalIndex] += currentValidatorPrice;
+        currentNodePrice = e.mul(f).div(d);
+        currentNodePrice = currentNodePrice.mul(1 ether).div(100000);
+        sellNodePrice = currentNodePrice.mul(99).div(100);
+        sellCommission[sellNodePrice] = currentNodePrice;
+        requiredBalance[globalIndex] += currentNodePrice;
     }
 
     /// @dev Remove an element of an array

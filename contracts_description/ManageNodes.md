@@ -26,7 +26,7 @@
 | └ | changeValidatorsPending | Public ❗️ | 🛑  | isNode isNotNode |
 | └ | changeValidatorsExecute | External ❗️ |  💵 | isNode isNotNode |
 | └ | withdrawRest | Public ❗️ | 🛑  |NO❗️ |
-| └ | updateValidatorPrice | Internal 🔒 | 🛑  | |
+| └ | updateNodePrice | Internal 🔒 | 🛑  | |
 | └ | removeFromArray | Internal 🔒 | 🛑  | |
 
 
