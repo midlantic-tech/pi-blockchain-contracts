@@ -66,6 +66,7 @@ contract PiFiatToken is IRC223, IERC20 {
         address payable _from = msg.sender;
         uint codeLength;
         bytes memory empty;
+        bytes32 orderId;
 
         assembly {
             // Retrieve the size of the code on target address, this needs assembly .
@@ -76,7 +77,7 @@ contract PiFiatToken is IRC223, IERC20 {
         balances[_to] = balances[_to].add(_value);
         if(codeLength>0) {
             PIDEX dex = PIDEX(_to);
-            bytes32 orderId = dex.setTokenOrder(_from, _value, receiving, price);
+            orderId = dex.setTokenOrder(_from, _value, receiving, price);
         }
         emit Transfer(_from, _to, _value);
         emit Transfer(_from, _to, _value, empty);
