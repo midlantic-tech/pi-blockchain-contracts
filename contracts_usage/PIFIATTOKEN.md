@@ -18,6 +18,8 @@ Function used to transfer token (_value) to an address (_to).
 
 Function used to set an order of *_value* amount, buying certain token with address *receiving* (address(0) when buying PI) and price *price*. The order will be set in the *PIDEX* contract with address *exchangeAddress*. The function returns the ID of the order.
 
+> token.setDexOrder(_value, receiving, price, exchangeAddress).send({from: account, gas: gasLimit})
+
 ## approve (address _to, uint _value)
 
 Function used to approve another address (_to) to transfer token from the aproving address. The max amount *_to* can spend is *_value*. 

@@ -11,3 +11,5 @@ Function used to send PI to *PiEmisor* contract in exchange of tokens in PI's co
 ## purchasePi (uint _value)
 
 Function used to send tokens in PI's composition to *PiEmisor* in exchange of PI. The contract uses function transferFromValue of each *PiFiatToken* contract to transfer itself the calculated amount of each token. The amount of token is calculated according to the desired PI amount indicated in *_value*. Note that the commission is 1% (which is used 50% as nodes' reward and 50% retired of circulating to increase PI's value). All transfers occur in the same transaction (atomic procedure).
+
+> piEmisor.methods.purchasePi(_value).send({from: account, gas: gasLimit})
