@@ -97,7 +97,7 @@ contract PIDEX is ERC223ReceivingContract {
     function dealOrder(bytes32 orderA, bytes32 orderB, uint side) public returns (bytes32) {
         require(msg.sender == _dex);
         require(orders[orderA].open && orders[orderB].open);
-        require(!orders[orderA].open && !orders[orderB].close)
+        require(!orders[orderA].close && !orders[orderB].close);
         require(orders[orderA].sending == orders[orderB].receiving);
         require(orders[orderA].receiving == orders[orderB].sending);
         if (side == 1) {
@@ -118,8 +118,8 @@ contract PIDEX is ERC223ReceivingContract {
         //colision????;
         bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, amount, price)));
 
-        checkDeal(orderA, amount, dealId);
-        checkDeal(orderB, amount, dealId);
+        checkDeal(orderA, orderB, amount, dealId);
+        checkDeal(orderB, orderA, amount, dealId);
 
         if (orders[orderA].receiving == address(0)) {
             orders[orderA].owner.transfer(amount);
@@ -176,7 +176,7 @@ contract PIDEX is ERC223ReceivingContract {
     }
 
     function checkDeal (bytes32 _orderId, bytes32 _matchingOrder, uint _amount, bytes32 _dealId) internal {
-        if (orders[_orderId].amount > amount) {
+        if (orders[_orderId].amount > _amount) {
             orders[_orderId].amount = orders[_orderId].amount.sub(_amount);
         } else {
             orders[_orderId].amount = 0;
