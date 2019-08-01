@@ -75,6 +75,8 @@ contract PiBallot {
     /// @return ballotId identifier of the Ballot
     function openBallot (address _oldLeader, address _newLeader) public returns(bytes32) {
         require(isSociety[msg.sender]);
+        uint nodeIndex = manageNodes.getNodeIndex(_oldLeader);
+        require(nodeIndex > 5);
         bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, _oldLeader, _newLeader, msg.sender)));
         ballots[ballotId].open = true;
         ballots[ballotId].oldLeader = _oldLeader;
