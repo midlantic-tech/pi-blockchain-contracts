@@ -115,7 +115,7 @@ contract PIDEX is ERC223ReceivingContract {
         }
 
         //colision????;
-        bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, amount, price)));
+        bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, amount)));
 
         checkDeal(orderA, orderB, amount, dealId);
         checkDeal(orderB, orderA, amount, dealId);
