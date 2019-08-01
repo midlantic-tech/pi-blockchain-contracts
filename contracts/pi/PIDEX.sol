@@ -12,7 +12,6 @@ contract PIDEX is ERC223ReceivingContract {
     using SafeMath for uint;
 
     struct Order {
-        bytes32 orderId;
         uint nonce;
         address payable owner;
         address sending;
