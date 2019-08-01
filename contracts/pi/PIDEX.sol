@@ -12,14 +12,20 @@ contract PIDEX is ERC223ReceivingContract {
     using SafeMath for uint;
 
     struct Order {
+        bytes32 orderId;
+        uint nonce;
         address payable owner;
         address sending;
         address receiving;
         uint amount;
         uint price;
         bool open;
+        bool close;
         bool cancelled;
         bool dealed;
+        bytes32[] deals;
+        bytes32[] dealsOrders;
+        uint[] dealsAmounts;
     }
 
     mapping(bytes32 => Order) public orders;
@@ -34,7 +40,12 @@ contract PIDEX is ERC223ReceivingContract {
 
     event SetOrder(address, address, address, uint, uint, bytes32);
     event CancelOrder(address, address, address, uint, uint, bytes32);
-    event Deal(bytes32, address, bytes32, address);
+    event Deal(bytes32);
+
+    function getDeals(bytes32 _orderId) public view returns (bytes32[] memory, bytes32[] memory, uint[] memory) {
+        require(orders[_orderId].dealed);
+        return (orders[_orderId].deals, orders[_orderId].dealsOrders, orders[_orderId].dealsAmounts);
+    }
 
     /// @dev set an order selling PI
     /// @param receiving address of the token to buy
@@ -59,7 +70,7 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param orderId identifier of the order to cancel
     function cancelOrder(bytes32 orderId) public {
         require(msg.sender == orders[orderId].owner);
-        require(orders[orderId].open && !orders[orderId].cancelled && !orders[orderId].dealed);
+        require(orders[orderId].open && !orders[orderId].cancelled);
         orders[orderId].open = false;
         orders[orderId].cancelled = true;
         if(orders[orderId].sending == address(0)) {
@@ -85,6 +96,8 @@ contract PIDEX is ERC223ReceivingContract {
     /// @return newOrderId identifier of the new order (bytes32(0) when none)
     function dealOrder(bytes32 orderA, bytes32 orderB, uint side) public returns (bytes32) {
         require(msg.sender == _dex);
+        require(orders[orderA].open && orders[orderB].open);
+        require(!orders[orderA].open && !orders[orderB].close)
         require(orders[orderA].sending == orders[orderB].receiving);
         require(orders[orderA].receiving == orders[orderB].sending);
         if (side == 1) {
@@ -93,20 +106,20 @@ contract PIDEX is ERC223ReceivingContract {
             require(orders[orderA].price >= orders[orderB].price);
         }
         uint amount;
-        bytes32 newOrderId;
 
         if (orders[orderA].amount < orders[orderB].amount) {
             amount = orders[orderA].amount;
-            uint rest = orders[orderB].amount.sub(orders[orderA].amount);
-            newOrderId = setOrder(orders[orderB].owner, orders[orderB].sending, rest, orders[orderB].receiving, orders[orderB].price);
         } else if (orders[orderA].amount > orders[orderB].amount) {
             amount = orders[orderB].amount;
-            uint rest = orders[orderA].amount.sub(orders[orderB].amount);
-            newOrderId = setOrder(orders[orderA].owner, orders[orderA].sending, rest, orders[orderA].receiving, orders[orderA].price);
         } else {
             amount = orders[orderA].amount;
-            newOrderId = bytes32(0);
         }
+
+        //colision????;
+        bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, amount, price)));
+
+        checkDeal(orderA, amount, dealId);
+        checkDeal(orderB, amount, dealId);
 
         if (orders[orderA].receiving == address(0)) {
             orders[orderA].owner.transfer(amount);
@@ -122,14 +135,8 @@ contract PIDEX is ERC223ReceivingContract {
             token.transfer(orders[orderB].owner, amount);
         }
 
-        orders[orderA].open = false;
-        orders[orderB].open = false;
-        orders[orderA].dealed = true;
-        orders[orderB].dealed = true;
-
-        emit Deal(orderA, orders[orderA].owner, orderB, orders[orderB].owner);
-
-        return newOrderId;
+        emit Deal(dealId);
+        return dealId;
     }
 
     /// @dev Add a new token to the exchange
@@ -166,6 +173,21 @@ contract PIDEX is ERC223ReceivingContract {
         orders[orderId].open = true;
         emit SetOrder(orders[orderId].owner, orders[orderId].sending, orders[orderId].receiving, orders[orderId].amount, orders[orderId].price, orderId);
         return orderId;
+    }
+
+    function checkDeal (bytes32 _orderId, bytes32 _matchingOrder, uint _amount, bytes32 _dealId) internal {
+        if (orders[_orderId].amount > amount) {
+            orders[_orderId].amount = orders[_orderId].amount.sub(_amount);
+        } else {
+            orders[_orderId].amount = 0;
+            orders[_orderId].open = false;
+            orders[_orderId].close = true;
+        }
+        orders[_orderId].nonce ++;
+        orders[_orderId].dealed = true;
+        orders[_orderId].deals.push(_dealId);
+        orders[_orderId].dealsOrders.push(_matchingOrder);
+        orders[_orderId].dealsAmounts.push(_amount);
     }
 
     /// @dev Check if the sender is accepted
