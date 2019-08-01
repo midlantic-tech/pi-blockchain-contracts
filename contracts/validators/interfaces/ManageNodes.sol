@@ -96,9 +96,9 @@ contract ManageNodes {
         nodes[msg.sender].payedPrice = purchaseNodePrice;
         nodesValue += purchaseNodePrice;
         nodesArray.push(msg.sender);
-        globalIndex++;
         nodes[msg.sender].index = globalIndex;
         nodes[msg.sender].isHolder = true;
+        globalIndex++;
         emisorAddress.transfer(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]));
         updateNodePrice();
     }
@@ -177,12 +177,9 @@ contract ManageNodes {
         uint index = nodes[who].index;
         if (index == 0) return;
         if (nodesArray.length != 0){
-            index--;
             if (nodesArray.length > 1) {
-                for (uint i = index; i < nodesArray.length.sub(1); i++) {
-                    nodesArray[i] = nodesArray[i.add(1)];
-                    nodes[nodesArray[i]].index--;
-                }
+                nodesArray[index.sub(1)] = nodesArray[nodesArray.length.sub(1)];
+                nodes[nodesArray[index.sub(1)]].index = index;
             }
             nodesArray.length --;
         }
