@@ -119,7 +119,6 @@ contract PiChainBlockReward is BlockReward, Owned {
                     for (uint j = 0; j < currentValidatorList.length; j++) {
                         offlineValidators[currentValidatorList[j]] = false;
                     }
-                    manageNodes.withdrawRest();
                 }
         		}
       	}

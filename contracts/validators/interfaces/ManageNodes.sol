@@ -21,7 +21,6 @@ contract ManageNodes {
     mapping(address => mapping(address => bool)) pendingValidatorChange;
     mapping(uint => uint) public purchaseCommission;
     mapping(uint => uint) public sellCommission;
-    mapping(uint => uint) public requiredBalance;
     address payable[] public nodesArray;
     uint public currentNodePrice;
     uint public sellNodePrice;
@@ -142,12 +141,6 @@ contract ManageNodes {
         _oldValidator.transfer(nodes[_oldValidator].payedPrice);
     }
 
-    /// @dev Called by BlockReward contract to remove circulating the non required amount in this contract
-    function withdrawRest() public {
-        require(msg.sender == address(0x0000000000000000000000000000000000000009));
-        emisorAddress.transfer(address(this).balance.sub(requiredBalance[globalIndex]));
-    }
-
     /// @dev Update node's price when somebody buy/sell a node
     function updateNodePrice() internal {
         uint nodos = globalIndex;
@@ -168,7 +161,6 @@ contract ManageNodes {
         currentNodePrice = currentNodePrice.mul(1 ether).div(100000);
         sellNodePrice = currentNodePrice.mul(99).div(100);
         sellCommission[sellNodePrice] = currentNodePrice;
-        requiredBalance[globalIndex] += currentNodePrice;
     }
 
     /// @dev Remove an element of an array
