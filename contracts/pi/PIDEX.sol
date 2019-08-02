@@ -6,7 +6,7 @@ import "./IRC223.sol";
 import "./PiFiatToken.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
-/// @title A contract designed to handle orders in the Exchange
+/// @title Contract designed to handle orders in the Exchange
 
 contract PIDEX is ERC223ReceivingContract {
     using SafeMath for uint;

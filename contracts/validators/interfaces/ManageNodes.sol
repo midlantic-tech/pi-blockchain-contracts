@@ -4,7 +4,7 @@ import "../../utils/safeMath.sol";
 import "./BaseOwnedSet.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
-/// @title Contract to handle node's market
+/// @title Contract designed to handle node's market
 
 contract ManageNodes {
     using SafeMath for uint;
