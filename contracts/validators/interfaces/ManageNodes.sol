@@ -41,7 +41,7 @@ contract ManageNodes {
         _;
     }
 
-    event CurrentNodeValue(uint);
+    event CurrentNodeValue(uint, uint);
 
     constructor (address payable[] memory initialValidators) public {
         globalIndex = 1;
@@ -163,7 +163,7 @@ contract ManageNodes {
         currentNodePrice = currentNodePrice.mul(1 ether).div(100000);
         sellNodePrice = currentNodePrice.mul(99).div(100);
         sellCommission[sellNodePrice] = currentNodePrice;
-        emit CurrentNodeValue(currentNodePrice);
+        emit CurrentNodeValue(currentNodePrice, globalIndex.sub(1));
     }
 
     /// @dev Remove an element of an array
