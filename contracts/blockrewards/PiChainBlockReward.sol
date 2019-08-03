@@ -27,7 +27,6 @@ contract PiChainBlockReward is BlockReward, Owned {
 
     address systemAddress;
     address validatorsAddress;
-    uint blocksSinceRewards;
     uint blockSecond;
     uint dayCommission;
     uint nodesComission;
@@ -52,11 +51,16 @@ contract PiChainBlockReward is BlockReward, Owned {
     	public
     {
         systemAddress = 0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE;
+        validatorsAddress = address(0);
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
         emisorAddress = address(0x0000000000000000000000000000000000000010);
-        blocksSinceRewards = 0;
         blockSecond = 100;
         payPerBlock = 250;
+        dayCommission = 0;
+        nodesComission = 0;
+        projectComission = 0;
+        lastPayed = 0;
+        nodesValue = 0;
     }
 
     // produce rewards for the given benefactors, with corresponding reward codes.

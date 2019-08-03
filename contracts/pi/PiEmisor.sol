@@ -16,12 +16,10 @@ contract PiEmisor is ERC223ReceivingContract {
         uint change;
     }
 
-    mapping(address => mapping(address => uint)) lockedTokens;
     mapping(address => bool) public acceptedTokens;
     mapping(address => Pending) public pendingTokens;
 
     uint public circulating;
-    address public reserveAddress;
     address private _owner;
     address payable rewards;
 

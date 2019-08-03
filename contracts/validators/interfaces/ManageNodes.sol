@@ -17,7 +17,6 @@ contract ManageNodes {
     }
 
     mapping(address => MasterNode) public nodes;
-    mapping(address => mapping(address => uint)) exchange;
     mapping(address => mapping(address => bool)) pendingValidatorChange;
     mapping(uint => uint) public purchaseCommission;
     mapping(uint => uint) public sellCommission;
@@ -26,7 +25,6 @@ contract ManageNodes {
     uint public sellNodePrice;
     uint public purchaseNodePrice;
     uint public nodesValue;
-    uint public maxValidators;
     uint public globalIndex;
     address payable emisorAddress;
     BaseOwnedSet validatorSet;
