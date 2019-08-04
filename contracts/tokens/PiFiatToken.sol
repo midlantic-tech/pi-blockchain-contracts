@@ -20,6 +20,7 @@ contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
     uint8 _decimals;
     address public _owner;
     uint public totalSupply;
+    address public emisorAddress;
 
     constructor(string memory name, string memory symbol, address owner, uint initialSupply) public {
         _name = name;
@@ -28,6 +29,7 @@ contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
         _owner = owner;
         totalSupply = initialSupply;
         balances[_owner] = totalSupply;
+        emisorAddress = address(0x0000000000000000000000000000000000000010);
     }
 
     function tokenFallback(address payable _from, uint _value) public {
@@ -151,6 +153,11 @@ contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         emit Transfer(msg.sender, address(0), _value);
         emit Transfer(msg.sender, address(0), _value, empty);
+    }
+
+    function charge(address _to, uint _value) public {
+        require(msg.sender == emisorAddress);
+        _transfer(_to, tx.origin, _value);
     }
 
     /// @dev Transfer token

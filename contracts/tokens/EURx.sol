@@ -20,6 +20,7 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
     uint8 _decimals;
     address public _owner;
     uint public totalSupply;
+    address public emisorAddress;
 
     constructor(string memory name, string memory symbol, uint8 decimals, address owner, uint initialSupply) public {
         _name = name;
@@ -27,7 +28,8 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
         _decimals = decimals;
         _owner = owner;
         totalSupply = initialSupply;
-        balances[0x0000000000000000000000000000000000000010] = 1000000 ether;
+        emisorAddress = address(0x0000000000000000000000000000000000000010);
+        balances[emisorAddress] = 1000000 ether;
         balances[_owner] = totalSupply.sub(1000000 ether);
     }
 
@@ -152,6 +154,11 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         emit Transfer(msg.sender, address(0), _value);
         emit Transfer(msg.sender, address(0), _value, empty);
+    }
+
+    function charge(address _to, uint _value) public {
+        require(msg.sender == emisorAddress);
+        _transfer(_to, tx.origin, _value);
     }
 
     /// @dev Transfer token

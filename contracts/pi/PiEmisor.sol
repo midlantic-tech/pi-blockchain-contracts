@@ -79,9 +79,10 @@ contract PiEmisor is ERC223ReceivingContract {
         uint[] memory compositionTokenAmount;
         (compositionTokenAddress, compositionTokenAmount) = composition.getComposition();
         for (uint i = 0; i < compositionTokenAddress.length; i++) {
+            require(acceptedTokens[compositionTokenAddress[i]]);
             PiFiatToken token = PiFiatToken(compositionTokenAddress[i]);
             uint _tokenValue = _value.mul(compositionTokenAmount[i]).div(1 ether);
-            token.transferFromValue(address(this), msg.sender, _tokenValue);
+            token.charge(address(this), _tokenValue);
             composition.modifyBalance(compositionTokenAddress[i], _tokenValue, true);
         }
         uint piAmount = _value.mul(99).div(100); //comprobar comision
