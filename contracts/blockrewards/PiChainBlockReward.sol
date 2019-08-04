@@ -55,7 +55,7 @@ contract PiChainBlockReward is BlockReward, Owned {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
         emisorAddress = address(0x0000000000000000000000000000000000000010);
         blockSecond = 100;
-        payPerBlock = 250;
+        payPerBlock = 25;
         dayCommission = 0;
         nodesComission = 0;
         projectComission = 0;
