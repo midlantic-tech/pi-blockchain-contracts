@@ -41,6 +41,7 @@ contract PiChainBlockReward is BlockReward, Owned {
 
     mapping(address => bool) public onlineValidators;
     mapping(address => bool) public offlineValidators;
+    mapping(address => uint) public cummulatedCommission;
 
     modifier onlySystem {
         require(msg.sender == systemAddress);
@@ -115,6 +116,7 @@ contract PiChainBlockReward is BlockReward, Owned {
                     if (!offlineValidators[validNodes[i]]) {
                         uint payedPrice = manageNodes.getPayedPrice(validNodes[i]);
                         uint nodeCommission = nodesComission.mul(payedPrice).div(nodesValue);
+                        cummulatedCommission[validNodes[i]] += nodeCommission;
                         validNodes[i].transfer(nodeCommission);
                     }
                     lastPayed = i;
