@@ -20,8 +20,8 @@
 
 pragma solidity 0.5.0;
 
-import "./Owned.sol";
-import "./ValidatorSet.sol";
+import "../utils/Owned.sol";
+import "./interfaces/ValidatorSet.sol";
 import "./RelayedOwnedSet.sol";
 
 

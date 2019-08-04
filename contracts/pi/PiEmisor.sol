@@ -2,8 +2,8 @@ pragma solidity 0.5.0;
 
 import "./PiComposition.sol";
 import "../utils/safeMath.sol";
-import "./ERC223_receiving_contract.sol";
-import "./PiFiatToken.sol";
+import "../tokens/ERC223_receiving_contract.sol";
+import "../tokens/PiFiatToken.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title A contract designed to handle the emission of PI

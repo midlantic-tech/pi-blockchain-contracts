@@ -16,8 +16,8 @@
 
 pragma solidity 0.5.0;
 
-import "./BaseOwnedSet.sol";
-import "./ValidatorSet.sol";
+import "./interfaces/BaseOwnedSet.sol";
+import "./interfaces/ValidatorSet.sol";
 
 
 contract OwnedSet is ValidatorSet, BaseOwnedSet {
@@ -32,7 +32,7 @@ contract OwnedSet is ValidatorSet, BaseOwnedSet {
         _;
     }
 
-    constructor(address[] _initial) BaseOwnedSet(_initial)
+    constructor(address[] memory _initial) BaseOwnedSet(_initial)
         public
     {
         systemAddress = 0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE;
@@ -54,7 +54,7 @@ contract OwnedSet is ValidatorSet, BaseOwnedSet {
         baseReportBenign(msg.sender, _validator, _blockNumber);
     }
 
-    function reportMalicious(address _validator, uint256 _blockNumber, bytes _proof)
+    function reportMalicious(address _validator, uint256 _blockNumber, bytes calldata _proof)
         external
     {
         baseReportMalicious(

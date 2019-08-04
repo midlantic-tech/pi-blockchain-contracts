@@ -20,7 +20,7 @@ import "./BlockReward.sol";
 import "../utils/safeMath.sol";
 import "../validators/interfaces/ValidatorSet.sol";
 import "../utils/Owned.sol";
-import "../validators/interfaces/ManageNodes.sol";
+import "../nodes/ManageNodes.sol";
 
 contract PiChainBlockReward is BlockReward, Owned {
     using SafeMath for uint;

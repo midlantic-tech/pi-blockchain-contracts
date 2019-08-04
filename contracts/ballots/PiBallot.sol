@@ -1,7 +1,7 @@
 pragma solidity 0.5.0;
 
 import "../utils/safeMath.sol";
-import "../validators/interfaces/ManageNodes.sol";
+import "../nodes/ManageNodes.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title A contract designed to handle ballots

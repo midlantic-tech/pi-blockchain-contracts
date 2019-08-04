@@ -4,12 +4,12 @@ import "../utils/safeMath.sol"; //https://github.com/OpenZeppelin/openzeppelin-c
 import "./IRC223.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
 import "./IERC20.sol"; //https://github.com/Dexaran/ERC223-token-standard/blob/master/token/ERC223/ERC223_interface.sol
 import "./ERC223_receiving_contract.sol";
-import "./PIDEX.sol";
+import "../dex/PIDEX.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract of the Token EURO
 
-contract PiFiatToken is IRC223, IERC20 {
+contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
     using SafeMath for uint;
 
     mapping(address => uint) public balances;
@@ -21,14 +21,17 @@ contract PiFiatToken is IRC223, IERC20 {
     address public _owner;
     uint public totalSupply;
 
-    constructor(string memory name, string memory symbol, uint8 decimals, address owner, uint initialSupply) public {
+    constructor(string memory name, string memory symbol, address owner, uint initialSupply) public {
         _name = name;
         _symbol = symbol;
-        _decimals = decimals;
+        _decimals = 18;
         _owner = owner;
         totalSupply = initialSupply;
-        balances[0x0000000000000000000000000000000000000010] = 100000000000000000000000000;
-        balances[_owner] = totalSupply.sub(100000000000000000000000000);
+        balances[_owner] = totalSupply;
+    }
+
+    function tokenFallback(address payable _from, uint _value) public {
+        require(msg.sender == address(this));
     }
 
     /// @dev Get the name

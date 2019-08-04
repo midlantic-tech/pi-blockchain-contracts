@@ -1,7 +1,7 @@
 pragma solidity 0.5.0;
 
-import "../../utils/safeMath.sol";
-import "./BaseOwnedSet.sol";
+import "../utils/safeMath.sol";
+import "../validators/interfaces/BaseOwnedSet.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract designed to handle node's market

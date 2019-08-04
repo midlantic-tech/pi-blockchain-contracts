@@ -1,9 +1,8 @@
 pragma solidity 0.5.0;
 
 import "../utils/safeMath.sol";
-import "./ERC223_receiving_contract.sol";
-import "./IRC223.sol";
-import "./PiFiatToken.sol";
+import "../tokens/ERC223_receiving_contract.sol";
+import "../tokens/IRC223.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract designed to handle orders in the Exchange
