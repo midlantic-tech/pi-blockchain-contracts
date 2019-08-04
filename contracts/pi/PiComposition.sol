@@ -15,6 +15,8 @@ contract PiComposition {
 
     mapping(address => uint) public emisorTokenBalance; //emisor's address indicate circulating amount of PI
 
+    address[] tokens;
+    uint[] balances;
     address public emisorAddress;
     Composition currentComposition;
 
@@ -22,8 +24,8 @@ contract PiComposition {
         currentComposition.compositionTokenAddress.push(address(0x0000000000000000000000000000000000000014));
         currentComposition.compositionTokenAmount.push(1 ether);
         emisorAddress = address(0x0000000000000000000000000000000000000010);
-        emisorTokenBalance[emisorAddress] = 1000000000000000000000;
-        emisorTokenBalance[address(0x0000000000000000000000000000000000000014)] = 1000000000000000000000;
+        emisorTokenBalance[emisorAddress] = 1000000 ether;
+        emisorTokenBalance[address(0x0000000000000000000000000000000000000014)] = 1000000 ether;
     }
 
     /// @dev Returns the current composition
@@ -31,6 +33,21 @@ contract PiComposition {
     /// @return currentComposition.compositionTokenAmount array with the change of the tokens in PI's composition
     function getComposition() public view returns(address[] memory, uint[] memory) {
         return (currentComposition.compositionTokenAddress, currentComposition.compositionTokenAmount);
+    }
+
+    function getEmisorBalances() public returns(address[] memory, uint[] memory) {
+        tokens.length = 0;
+        balances.length = 0;
+
+        tokens.push(emisorAddress);
+        balances.push(emisorTokenBalance[emisorAddress]);
+
+        for (uint i = 0; i < currentComposition.compositionTokenAddress.length; i++) {
+            tokens.push(currentComposition.compositionTokenAddress[i]);
+            balances.push(emisorTokenBalance[currentComposition.compositionTokenAddress[i]]);
+        }
+
+        return (tokens, balances);
     }
 
     /// @dev Handle the balance of Emisor Contract

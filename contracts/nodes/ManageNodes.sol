@@ -77,7 +77,6 @@ contract ManageNodes {
         return nodes[_node].index;
     }
 
-    /// DONDE???????????????????
     function getNodesValue() public view returns(uint) {
         return nodesValue;
     }

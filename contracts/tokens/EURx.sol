@@ -27,8 +27,8 @@ contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
         _decimals = decimals;
         _owner = owner;
         totalSupply = initialSupply;
-        balances[0x0000000000000000000000000000000000000010] = 100000000000000000000000000;
-        balances[_owner] = totalSupply.sub(100000000000000000000000000);
+        balances[0x0000000000000000000000000000000000000010] = 1000000 ether;
+        balances[_owner] = totalSupply.sub(1000000 ether);
     }
 
     function tokenFallback(address payable _from, uint _value) public {
