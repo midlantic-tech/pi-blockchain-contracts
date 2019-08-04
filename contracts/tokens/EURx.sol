@@ -9,7 +9,7 @@ import "../dex/PIDEX.sol";
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract of the Token EURO
 
-contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
+contract EURx is IRC223, IERC20, ERC223ReceivingContract {
     using SafeMath for uint;
 
     mapping(address => uint) public balances;
