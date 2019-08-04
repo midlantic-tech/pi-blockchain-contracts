@@ -29,6 +29,7 @@ contract PIDEX is ERC223ReceivingContract {
 
     mapping(bytes32 => Order) public orders;
     mapping(address => bool) public listedTokens;
+    mapping(address => uint) public salt;
     mapping(address => mapping(address => uint)) public receivedTokens;
 
     address private _dex;
@@ -162,8 +163,9 @@ contract PIDEX is ERC223ReceivingContract {
     /// @return orderId identifier of the order
     function setOrder(address payable owner, address sending, uint amount, address receiving, uint price) internal returns (bytes32) {
         require(acceptedSender(sending));
-        bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, owner, sending, receiving, amount, price)));
+        bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, owner, sending, receiving, amount, price, salt[owner])));
         require(!orders[orderId].open && !orders[orderId].cancelled && !orders[orderId].dealed);
+        salt[owner]++;
         orders[orderId].owner = owner;
         orders[orderId].sending = sending;
         orders[orderId].receiving = receiving;
