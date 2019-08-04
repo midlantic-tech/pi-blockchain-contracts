@@ -102,7 +102,7 @@ contract PiChainBlockReward is BlockReward, Owned {
                     }
                     nodesValue = manageNodes.getNodesValue();
                 }
-                uint currentLastPayed;
+                uint currentLastPayed = 0;
                 if (lastPayed.add(payPerBlock) < validNodes.length) {
                     currentLastPayed = lastPayed.add(payPerBlock);
                     blockSecond++;
@@ -123,6 +123,8 @@ contract PiChainBlockReward is BlockReward, Owned {
                     for (uint j = 0; j < currentValidatorList.length; j++) {
                         offlineValidators[currentValidatorList[j]] = false;
                     }
+
+                    lastPayed = 0;
                 }
         		}
       	}
