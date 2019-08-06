@@ -114,6 +114,18 @@ contract PiChainBlockReward is BlockReward, Owned {
         msg.sender.transfer(toPay);
     }
 
+    function seeRewards() public view returns (uint) {
+        require(manageNodes.isRewarded(msg.sender, day));
+        uint fromDay = manageNodes.getFromDay(msg.sender);
+        uint payedPrice = manageNodes.getPayedPrice(msg.sender);
+        uint toPay = 0;
+        for(uint i = fromDay; i < day; i++) {
+            toPay = toPay.add(commissionByDay[i].commission.mul(payedPrice).div(commissionByDay[i].nodesValue));
+        }
+
+        return toPay;
+    }
+
     function () external payable {
 
     }

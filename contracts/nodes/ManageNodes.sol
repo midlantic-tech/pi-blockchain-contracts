@@ -102,7 +102,7 @@ contract ManageNodes {
         nodes[_node].fromDay = day;
     }
 
-    function isRewarded(address _node, uint day) public returns (bool) {
+    function isRewarded(address _node, uint day) public view returns (bool) {
         return (((nodes[_node].isValidator) || (nodes[_node].isHolder)) && (day > nodes[_node].fromDay));
     }
 
