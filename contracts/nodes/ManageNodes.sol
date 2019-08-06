@@ -110,7 +110,7 @@ contract ManageNodes {
     function purchaseNode() external payable isNotNode(msg.sender) {
         require(msg.value == purchaseNodePrice);
         nodes[msg.sender].payedPrice = purchaseNodePrice;
-        nodesValue += purchaseNodePrice;
+        nodesValue = nodesValue.add(purchaseCommission[purchaseNodePrice]);
         nodesArray.push(msg.sender);
         nodes[msg.sender].index = globalIndex;
         nodes[msg.sender].isHolder = true;
@@ -125,6 +125,7 @@ contract ManageNodes {
         require(!nodes[msg.sender].isValidator);
         removeFromArray(msg.sender);
         globalIndex--;
+        nodesValue = nodesValue.sub(sellCommission[sellNodePrice]);
         msg.sender.transfer(sellNodePrice);
         emisorAddress.transfer(sellCommission[sellNodePrice].sub(sellNodePrice));
         nodes[msg.sender].isHolder = false;
