@@ -25,6 +25,11 @@ import "../nodes/ManageNodes.sol";
 contract PiChainBlockReward is BlockReward, Owned {
     using SafeMath for uint;
 
+    struct DayCommission {
+        uint commission;
+        uint nodesValue;
+    }
+
     address systemAddress;
     address validatorsAddress;
     uint blockSecond;
@@ -35,6 +40,8 @@ contract PiChainBlockReward is BlockReward, Owned {
     address payable emisorAddress;
     uint lastPayed;
     uint nodesValue;
+    uint assigned;
+    uint day;
 
     ValidatorSet validatorSet;
     ManageNodes manageNodes;
@@ -42,6 +49,8 @@ contract PiChainBlockReward is BlockReward, Owned {
     mapping(address => bool) public onlineValidators;
     mapping(address => bool) public offlineValidators;
     mapping(address => uint) public accumulatedCommission;
+
+    mapping(uint => DayCommission) public commissionByDay;
 
     modifier onlySystem {
         require(msg.sender == systemAddress);
@@ -62,82 +71,47 @@ contract PiChainBlockReward is BlockReward, Owned {
         projectComission = 0;
         lastPayed = 0;
         nodesValue = 0;
+        assigned = 0;
+        day = 0;
     }
 
     // produce rewards for the given benefactors, with corresponding reward codes.
     // only callable by `SYSTEM_ADDRESS`
     function reward(address[] calldata benefactors, uint16[] calldata kind)
-    	external
-    	onlySystem
-    	returns (address[] memory, uint256[] memory)
+      external
+      onlySystem
+      returns (address[] memory, uint256[] memory)
     {
         require(benefactors.length == kind.length);
         uint256[] memory rewards = new uint256[](benefactors.length);
 
-        if(validatorsAddress != address(0)) {
-            for (uint i = 0; i < benefactors.length; i++) {
-                onlineValidators[benefactors[i]] = true;
-            }
-
-            address[] memory currentValidatorList = validatorSet.getValidators();
-
-            if ((block.number % currentValidatorList.length) == 0) {
-                for (uint j = 0; j < currentValidatorList.length; j++) {
-                    if(!onlineValidators[currentValidatorList[j]]) {
-                        offlineValidators[currentValidatorList[j]] = true;
-        		        }
-                    onlineValidators[currentValidatorList[j]] = false;
-                }
-        		}
-
-            if ((block.number % blockSecond) == 0) {
-                address payable[] memory validNodes = manageNodes.getNodes();
-                if (blockSecond == 100) {
-                    dayCommission = address(this).balance;
-                    nodesComission = dayCommission.mul(5).div(10);
-                    projectComission = nodesComission;
-                    emisorAddress.transfer(projectComission);
-                    lastPayed = 0;
-                    if (validNodes.length < payPerBlock) {
-                        payPerBlock = validNodes.length;
-                    }
-                    nodesValue = manageNodes.getNodesValue();
-                }
-                uint currentLastPayed = 0;
-                if (lastPayed.add(payPerBlock) < validNodes.length) {
-                    currentLastPayed = lastPayed.add(payPerBlock);
-                    blockSecond++;
-                } else {
-                    currentLastPayed = validNodes.length;
-                    blockSecond = 100;
-                }
-
-                for (uint i = lastPayed; i < currentLastPayed; i++) {
-                    if (!offlineValidators[validNodes[i]]) {
-                        uint payedPrice = manageNodes.getPayedPrice(validNodes[i]);
-                        uint nodeCommission = nodesComission.mul(payedPrice).div(nodesValue);
-                        accumulatedCommission[validNodes[i]] += nodeCommission;
-                        validNodes[i].transfer(nodeCommission);
-                    }
-                    lastPayed = i;
-                }
-                if (currentLastPayed == validNodes.length) {
-                    for (uint j = 0; j < currentValidatorList.length; j++) {
-                        offlineValidators[currentValidatorList[j]] = false;
-                    }
-
-                    lastPayed = 0;
-                }
-        		}
-      	}
+        if ((block.number % blockSecond) == 0) {
+            address payable[] memory validNodes = manageNodes.getNodes();
+            dayCommission = address(this).balance.sub(assigned);
+            assigned = assigned.add(dayCommission);
+            nodesComission = dayCommission.div(2);
+            projectComission = nodesComission;
+            emisorAddress.transfer(projectComission);
+            commissionByDay[day].commission = nodesComission;
+            commissionByDay[day].nodesValue = manageNodes.getNodesValue();
+            day++;
+        }
 
         return (benefactors, rewards);
     }
 
-    function setValidatorAddress(address _validatorsAddress) public onlyOwner {
-        require(validatorsAddress == address(0));
-        validatorsAddress = _validatorsAddress;
-        validatorSet = ValidatorSet(validatorsAddress);
+    function withdrawRewards() public {
+        require(manageNodes.isRewarded(msg.sender, day));
+        uint fromDay = manageNodes.getFromDay(msg.sender);
+        uint payedPrice = manageNodes.getPayedPrice(msg.sender);
+        uint toPay = 0;
+        for(uint i = fromDay; i < day; i++) {
+            toPay = toPay.add(commissionByDay[i].commission.mul(payedPrice).div(commissionByDay[i].nodesValue));
+        }
+
+        manageNodes.modifyFromDay(msg.sender, day);
+        assigned = assigned.sub(toPay);
+        msg.sender.transfer(toPay);
     }
 
     function () external payable {

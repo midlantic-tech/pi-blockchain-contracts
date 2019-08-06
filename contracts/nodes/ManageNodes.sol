@@ -14,6 +14,7 @@ contract ManageNodes {
         uint payedPrice;
         bool isValidator;
         bool isHolder;
+        uint fromDay;
     }
 
     mapping(address => MasterNode) public nodes;
@@ -27,7 +28,9 @@ contract ManageNodes {
     uint public nodesValue;
     uint public globalIndex;
     address payable emisorAddress;
+    address rewardsAddress;
     BaseOwnedSet validatorSet;
+    uint blockSecond;
 
     modifier isNode(address _someone) {
         require(nodes[_someone].isValidator || nodes[_someone].isHolder);
@@ -52,12 +55,14 @@ contract ManageNodes {
             nodesValue += 1 ether;
         }
         emisorAddress = (address(0x0000000000000000000000000000000000000010));
+        rewardsAddress = (address(0x0000000000000000000000000000000000000009));
         currentNodePrice = 6600000000000000000; // Value of the 11th node
         purchaseNodePrice = 6666000000000000000; // Purchase price of the 11th value
         purchaseCommission[purchaseNodePrice] = currentNodePrice;
         currentNodePrice = 5500000000000000000; // Value of the N-1 node
         sellNodePrice = 5445000000000000000; // Sell price of the 11th value
         sellCommission[sellNodePrice] = currentNodePrice;
+        blockSecond = 100;
     }
 
     /// @dev Set RelaySet contract's address when deployed
@@ -88,6 +93,19 @@ contract ManageNodes {
         return nodes[_node].payedPrice;
     }
 
+    function getFromDay(address _node) public view returns (uint) {
+        return nodes[_node].fromDay;
+    }
+
+    function modifyFromDay(address _node, uint day) public {
+        require(msg.sender == rewardsAddress);
+        nodes[_node].fromDay = day;
+    }
+
+    function isRewarded(address _node, uint day) public returns (bool) {
+        return (((nodes[_node].isValidator) || (nodes[_node].isHolder)) && (day > nodes[_node].fromDay));
+    }
+
     /// @dev Purchase the next node
     function purchaseNode() external payable isNotNode(msg.sender) {
         require(msg.value == purchaseNodePrice);
@@ -96,6 +114,7 @@ contract ManageNodes {
         nodesArray.push(msg.sender);
         nodes[msg.sender].index = globalIndex;
         nodes[msg.sender].isHolder = true;
+        nodes[msg.sender].fromDay = block.number.div(blockSecond);
         globalIndex++;
         emisorAddress.transfer(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]));
         updateNodePrice();
