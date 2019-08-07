@@ -112,9 +112,9 @@ contract BaseOwnedSet is Owned {
     // Add a validator.
     function addValidator(address _validator)
         public
-        onlyOwner
         isNotValidator(_validator)
     {
+        require(msg.sender == address(0x0000000000000000000000000000000000000012));
         status[_validator].isIn = true;
         status[_validator].index = pending.length;
         pending.push(_validator);
@@ -124,11 +124,11 @@ contract BaseOwnedSet is Owned {
     // Remove a validator.
     function removeValidator(address _validator)
         public
-        onlyOwner
         isValidator(_validator)
     {
         // Remove validator from pending by moving the
         // last element to its slot
+        require(msg.sender == address(0x0000000000000000000000000000000000000012));
         uint index = status[_validator].index;
         pending[index] = pending[pending.length - 1];
         status[pending[index]].index = index;

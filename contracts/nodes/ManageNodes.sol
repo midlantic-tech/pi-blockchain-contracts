@@ -78,6 +78,10 @@ contract ManageNodes {
         return nodesArray;
     }
 
+    function isValidator(address _node) public view returns(bool) {
+        return nodes[_node].isValidator;
+    }
+
     function getNodeIndex(address _node) public view returns(uint) {
         return nodes[_node].index;
     }

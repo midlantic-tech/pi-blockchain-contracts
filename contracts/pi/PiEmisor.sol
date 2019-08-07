@@ -20,17 +20,15 @@ contract PiEmisor is ERC223ReceivingContract {
     mapping(address => Pending) public pendingTokens;
 
     uint public circulating;
-    address private _owner;
     address payable rewards;
 
     PiComposition composition;
 
     event TokenTransfer(address, uint);
 
-    constructor (address owner) public {
+    constructor () public {
         composition = PiComposition(address(0x0000000000000000000000000000000000000011));
         acceptedTokens[address(0x0000000000000000000000000000000000000014)] = true;
-        _owner = owner;
         rewards = address(0x0000000000000000000000000000000000000009);
     }
 
@@ -60,7 +58,7 @@ contract PiEmisor is ERC223ReceivingContract {
     /// @param newPendingToken address of the token
     /// @param _change change of the token
     function addPending (address newPendingToken, uint _change) public {
-        require(msg.sender == _owner);
+        require(msg.sender == address(0x0000000000000000000000000000000000000013));
         pendingTokens[newPendingToken].isPending = true;
         pendingTokens[newPendingToken].change = _change;
     }
