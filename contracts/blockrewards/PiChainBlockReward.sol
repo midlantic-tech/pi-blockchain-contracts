@@ -86,7 +86,6 @@ contract PiChainBlockReward is BlockReward, Owned {
         uint256[] memory rewards = new uint256[](benefactors.length);
 
         if ((block.number % blockSecond) == 0) {
-            address payable[] memory validNodes = manageNodes.getNodes();
             dayCommission = address(this).balance.sub(assigned);
             assigned = assigned.add(dayCommission);
             nodesComission = dayCommission.div(2);

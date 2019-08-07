@@ -18,6 +18,7 @@ contract PiBallot {
         bool addPending;
         bool addAssociation;
         address who;
+        uint change;
         address oldLeader;
         address newLeader;
         uint voteCount;
@@ -76,12 +77,13 @@ contract PiBallot {
         voted[proposalId][msg.sender] = true;
     }
 
-    function openBallotAddPending(address tokenAddress) public returns(bytes32) {
+    function openBallotAddPending(address tokenAddress, uint change) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
         bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, tokenAddress, salt, msg.sender)));
         ballots[ballotId].open = true;
         ballots[ballotId].who = tokenAddress;
+        ballots[ballotId].change = change;
         ballots[ballotId].isFederal = true;
         ballots[ballotId].addPending = true;
         emit BallotCreated(ballotId);
@@ -143,10 +145,10 @@ contract PiBallot {
             ballots[_ballotId].voteCount ++;
         }
         voted[_ballotId][msg.sender] = true;
-        uint success = checkBallot(_ballotId);
+        bool success = checkBallot(_ballotId);
         if(success) {
             if(ballots[_ballotId].addPending) {
-                emisor.addPending(ballots[_ballotId].who);
+                emisor.addPending(ballots[_ballotId].who, ballots[_ballotId].change);
             } else if(ballots[_ballotId].addAssociation) {
                 addAssociation(ballots[_ballotId].who);
             }
@@ -166,9 +168,7 @@ contract PiBallot {
 
     /// @dev Add a Association with its members
     /// @param newAssociation wallet of the Association
-    /// @param members array with wallets of Association's members
     function addAssociation (address newAssociation) internal {
-        require(msg.sender == _owner);
         isAssociation[newAssociation] = true;
     }
 }
