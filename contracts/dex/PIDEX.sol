@@ -17,6 +17,7 @@ contract PIDEX is ERC223ReceivingContract {
         address receiving;
         uint amount;
         uint price;
+        uint side;
         bool open;
         bool close;
         bool cancelled;
@@ -49,8 +50,8 @@ contract PIDEX is ERC223ReceivingContract {
     /// @dev set an order selling PI
     /// @param receiving address of the token to buy
     /// @param price the price of the order
-    function setPiOrder(address receiving, uint price) external payable returns (bytes32) {
-        bytes32 orderId = setOrder(msg.sender, address(0), msg.value, receiving, price);
+    function setPiOrder(address receiving, uint price, uint side) external payable returns (bytes32) {
+        bytes32 orderId = setOrder(msg.sender, address(0), msg.value, receiving, price, side);
         return orderId;
     }
 
@@ -59,9 +60,9 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param amount amount of token to sell
     /// @param receiving address of the token to buy (address(0) when buying PI)
     /// @param price the price of the order
-    function setTokenOrder(address payable owner, uint amount, address receiving, uint price) public returns (bytes32) {
+    function setTokenOrder(address payable owner, uint amount, address receiving, uint price, uint side) public returns (bytes32) {
         require(acceptedSender(msg.sender));
-        bytes32 orderId = setOrder(owner, msg.sender, amount, receiving, price);
+        bytes32 orderId = setOrder(owner, msg.sender, amount, receiving, price, side);
         return orderId;
     }
 
@@ -104,34 +105,53 @@ contract PIDEX is ERC223ReceivingContract {
         } else if (side == 2) {
             require(orders[orderA].price >= orders[orderB].price);
         }
-        uint amount;
+        uint amountA;
+        uint amountB;
 
-        if (orders[orderA].amount < orders[orderB].amount) {
-            amount = orders[orderA].amount;
-        } else if (orders[orderA].amount > orders[orderB].amount) {
-            amount = orders[orderB].amount;
+        if (orders[orderA].side == 1) {
+            amountA = orders[orderA].amount;
+            amountB = orders[orderB].amount.div(orders[orderB].price).mul(1 ether);
         } else {
-            amount = orders[orderA].amount;
+            amountA = orders[orderA].amount.div(orders[orderA].price).mul(1 ether);
+            amountB = orders[orderB].amount;
         }
 
-        //colision????;
-        bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, amount)));
+        uint finalAmount;
 
-        checkDeal(orderA, orderB, amount, dealId);
-        checkDeal(orderB, orderA, amount, dealId);
+        if(amountA > amountB) {
+            finalAmount = amountB;
+        } else {
+            finalAmount = amountA;
+        }
+
+        uint finalAmountA;
+        uint finalAmountB;
+
+        if (orders[orderA].side == 1) {
+            finalAmountA = finalAmount;
+            finalAmountB = finalAmount.mul(orders[orderB].price).div(1 ether);
+        } else {
+            finalAmountA = finalAmount.mul(orders[orderA].price).div(1 ether);
+            finalAmountB = finalAmount;
+        }
+
+        bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, finalAmountA, finalAmountB)));
+
+        checkDeal(orderA, orderB, finalAmountA, dealId);
+        checkDeal(orderB, orderA, finalAmountB, dealId);
 
         if (orders[orderA].receiving == address(0)) {
-            orders[orderA].owner.transfer(amount);
+            orders[orderA].owner.transfer(finalAmountB);
         } else {
             IRC223 token = IRC223(address(orders[orderA].receiving));
-            token.transfer(orders[orderA].owner, amount);
+            token.transfer(orders[orderA].owner, finalAmountB);
         }
 
         if (orders[orderB].receiving == address(0)) {
-            orders[orderB].owner.transfer(amount);
+            orders[orderB].owner.transfer(finalAmountA);
         } else {
             IRC223 token = IRC223(address(orders[orderB].receiving));
-            token.transfer(orders[orderB].owner, amount);
+            token.transfer(orders[orderB].owner, finalAmountA);
         }
 
         emit Deal(dealId);
@@ -160,9 +180,9 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param receiving address of the token to buy (address(0) when buying PI)
     /// @param price the price of the order
     /// @return orderId identifier of the order
-    function setOrder(address payable owner, address sending, uint amount, address receiving, uint price) internal returns (bytes32) {
+    function setOrder(address payable owner, address sending, uint amount, address receiving, uint price, uint side) internal returns (bytes32) {
         require(acceptedSender(sending));
-        bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, owner, sending, receiving, amount, price, salt[owner])));
+        bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, sending, receiving, amount, price, side, salt[owner])));
         require(!orders[orderId].open && !orders[orderId].cancelled && !orders[orderId].dealed);
         salt[owner]++;
         orders[orderId].owner = owner;
@@ -170,6 +190,7 @@ contract PIDEX is ERC223ReceivingContract {
         orders[orderId].receiving = receiving;
         orders[orderId].amount = amount;
         orders[orderId].price = price;
+        orders[orderId].side = side;
         orders[orderId].open = true;
         emit SetOrder(orders[orderId].owner, orders[orderId].sending, orders[orderId].receiving, orders[orderId].amount, orders[orderId].price, orderId);
         return orderId;
