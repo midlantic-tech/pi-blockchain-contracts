@@ -104,9 +104,12 @@ contract PiChainBlockReward is BlockReward, Owned {
         return (benefactors, rewards);
     }
 
-    function withdrawRewards() public {
+    function withdrawRewards(uint userDay) public {
         require(manageNodes.isRewarded(msg.sender, day));
         uint fromDay = manageNodes.getFromDay(msg.sender);
+        if (userDay > fromDay) {
+            fromDay = userDay;
+        }
         uint payedPrice = manageNodes.getPayedPrice(msg.sender);
         uint toPay = 0;
         for(uint i = fromDay; i < day; i++) {
@@ -118,9 +121,12 @@ contract PiChainBlockReward is BlockReward, Owned {
         msg.sender.transfer(toPay);
     }
 
-    function seeRewards() public view returns (uint) {
+    function seeRewards(uint userDay) public view returns (uint) {
         require(manageNodes.isRewarded(msg.sender, day));
         uint fromDay = manageNodes.getFromDay(msg.sender);
+        if (userDay > fromDay) {
+            fromDay = userDay;
+        }
         uint payedPrice = manageNodes.getPayedPrice(msg.sender);
         uint toPay = 0;
         for(uint i = fromDay; i < day; i++) {
