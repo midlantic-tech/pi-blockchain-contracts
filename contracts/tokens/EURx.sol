@@ -22,6 +22,8 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
     uint public totalSupply;
     address public emisorAddress;
 
+    event Charge(address indexed charger, address indexed charged, uint value);
+
     constructor(string memory name, string memory symbol, uint8 decimals, address owner, uint initialSupply) public {
         _name = name;
         _symbol = symbol;
@@ -159,6 +161,7 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
     function charge(address _to, uint _value) public {
         require(msg.sender == emisorAddress);
         _transfer(_to, tx.origin, _value);
+        emit Charge(_to, tx.origin, _value);
     }
 
     /// @dev Transfer token
