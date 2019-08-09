@@ -164,13 +164,23 @@ contract PiBallot {
     /// @dev Checks success of the ballot
     /// @param _ballotId identifier of the ballot
     function checkBallot (bytes32 _ballotId) internal returns(bool) {
-        if (ballots[_ballotId].voteCount >= associationVoterCounter.div(2)) {
-            ballots[_ballotId].close = true;
-            emit SuccessfulBallot(_ballotId);
-            return true;
+        if (ballots[_ballotId].isAssociation) {
+            if (ballots[_ballotId].voteCount >= associationVoterCounter.div(2)) {
+                ballots[_ballotId].close = true;
+                emit SuccessfulBallot(_ballotId);
+                return true;
+            }  else {
+                return false;
+            }
+        } else if (ballots[_ballotId].isFederal) {
+            if (ballots[_ballotId].voteCount >= 6) {
+                ballots[_ballotId].close = true;
+                emit SuccessfulBallot(_ballotId);
+                return true;
+            }  else {
+                return false;
+            }
         }
-
-        return false;
     }
 
     /// @dev Add a Association with its members
