@@ -57,6 +57,8 @@ contract PiChainBlockReward is BlockReward, Owned {
         _;
     }
 
+    event WithdrawRewards(address indexed who, uint since, uint until, uint amount);
+
     constructor()
     	public
     {
@@ -119,6 +121,7 @@ contract PiChainBlockReward is BlockReward, Owned {
         manageNodes.modifyFromDay(msg.sender, day);
         assigned = assigned.sub(toPay);
         msg.sender.transfer(toPay);
+        emit WithdrawRewards(msg.sender, fromDay, day, toPay);
     }
 
     function seeRewards(uint userDay) public view returns (uint) {
