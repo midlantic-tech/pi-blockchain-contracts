@@ -41,11 +41,11 @@ contract PiBallot {
     ManageNodes manageNodes;
     PiEmisor emisor;
 
-    event AddAssociationMember(address indexed, address indexed);
-    event RemoveAssociationMember(address indexed, address indexed);
-    event BallotCreated(bytes32 indexed, address indexed);
-    event SuccessfulBallot(bytes32 indexed);
-    event AddAssociation(address indexed);
+    event AddAssociationMember(address indexed member, address indexed association);
+    event RemoveAssociationMember(address indexed member, address indexed association);
+    event BallotCreated(bytes32 indexed id, address indexed creator);
+    event SuccessfulBallot(bytes32 indexed id);
+    event AddAssociation(address indexed newAssociation);
 
     constructor () public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
