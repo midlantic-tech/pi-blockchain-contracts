@@ -29,20 +29,23 @@ contract PiBallot {
         uint voteCount;
     }
 
-    mapping(address => bool) isAssociation;
+    mapping(address => bool) public isAssociation;
     mapping(bytes32 => Ballot) public ballots;
     mapping(bytes32 => Proposal) public proposals;
-    mapping(address => bool) associationVoter;
-    mapping(bytes32 => mapping(address => bool)) voted;
+    mapping(address => bool) public associationVoter;
+    mapping(bytes32 => mapping(address => bool)) public voted;
 
-    uint associationVoterCounter;
-    uint salt;
-    uint globalIndex;
+    uint public associationVoterCounter;
+    uint public salt;
 
     ManageNodes manageNodes;
     PiEmisor emisor;
 
-    event BallotCreated(bytes32);
+    event AddAssociationMember(address indexed, address indexed);
+    event RemoveAssociationMember(address indexed, address indexed);
+    event BallotCreated(bytes32 indexed, address indexed);
+    event SuccessfulBallot(bytes32 indexed);
+    event AddAssociation(address indexed);
 
     constructor () public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
@@ -53,18 +56,21 @@ contract PiBallot {
         require(isAssociation[msg.sender]);
         associationVoter[newAssociationMember] = true;
         associationVoterCounter++;
+        emit AddAssociationMember(newAssociationMember, msg.sender);
     }
 
     function removeAssociationMember(address oldAssociationMember) public {
         require(isAssociation[msg.sender]);
         associationVoter[oldAssociationMember] = false;
         associationVoterCounter--;
+        emit RemoveAssociationMember(oldAssociationMember, msg.sender);
     }
 
     /// @dev Association opens a proposal identified by a hash
     /// @param proposalId identifier of the proposal
     function openProposal(bytes32 proposalId) public {
         require(isAssociation[msg.sender]);
+        require(!proposals[proposalId].open);
         proposals[proposalId].open = true;
     }
 
@@ -86,7 +92,7 @@ contract PiBallot {
         ballots[ballotId].change = change;
         ballots[ballotId].isFederal = true;
         ballots[ballotId].addPending = true;
-        emit BallotCreated(ballotId);
+        emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
 
@@ -98,7 +104,7 @@ contract PiBallot {
         ballots[ballotId].who = newAssociation;
         ballots[ballotId].isFederal = true;
         ballots[ballotId].addAssociation = true;
-        emit BallotCreated(ballotId);
+        emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
 
@@ -116,7 +122,7 @@ contract PiBallot {
         ballots[ballotId].isAssociation = true;
         ballots[ballotId].oldLeader = _oldLeader;
         ballots[ballotId].newLeader = _newLeader;
-        emit BallotCreated(ballotId);
+        emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
 
@@ -160,6 +166,7 @@ contract PiBallot {
     function checkBallot (bytes32 _ballotId) internal returns(bool) {
         if (ballots[_ballotId].voteCount >= associationVoterCounter.div(2)) {
             ballots[_ballotId].close = true;
+            emit SuccessfulBallot(_ballotId);
             return true;
         }
 
@@ -170,5 +177,6 @@ contract PiBallot {
     /// @param newAssociation wallet of the Association
     function addAssociation (address newAssociation) internal {
         isAssociation[newAssociation] = true;
+        emit AddAssociation(newAssociation);
     }
 }
