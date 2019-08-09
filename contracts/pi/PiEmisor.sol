@@ -24,7 +24,9 @@ contract PiEmisor is ERC223ReceivingContract {
 
     PiComposition composition;
 
-    event TokenTransfer(address, uint);
+    event ReceivePi(address indexed user, uint piAmount);
+    event RedeemPi(address indexed user, uint piAmount);
+    event TokenAdded(address indexed token, uint change);
 
     constructor () public {
         composition = PiComposition(address(0x0000000000000000000000000000000000000011));
@@ -121,5 +123,6 @@ contract PiEmisor is ERC223ReceivingContract {
     function addToken (address newAcceptedToken) internal {
         pendingTokens[newAcceptedToken].isPending = false;
         acceptedTokens[newAcceptedToken] = true;
+        emit TokenAdded(newAcceptedToken, pendingTokens[newAcceptedToken].change);
     }
 }
