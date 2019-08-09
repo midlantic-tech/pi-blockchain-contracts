@@ -38,9 +38,9 @@ contract PIDEX is ERC223ReceivingContract {
         _dex = dex;
     }
 
-    event SetOrder(address, address, address, uint, uint, bytes32);
-    event CancelOrder(address, address, address, uint, uint, bytes32);
-    event Deal(bytes32);
+    event SetOrder(address indexed owner, address indexed buying, address indexed selling, uint amount, uint price, bytes32 id);
+    event CancelOrder(address indexed owner, address indexed buying, address indexed selling, uint amount, uint price, bytes32 id);
+    event Deal(bytes32 indexed id, bytes32 orderA, bytes32 orderB);
 
     function getDeals(bytes32 _orderId) public view returns (bytes32[] memory, bytes32[] memory, uint[] memory) {
         require(orders[_orderId].dealed);
@@ -154,7 +154,7 @@ contract PIDEX is ERC223ReceivingContract {
             token.transfer(orders[orderB].owner, finalAmountA);
         }
 
-        emit Deal(dealId);
+        emit Deal(dealId, orderA, orderB);
         return dealId;
     }
 
