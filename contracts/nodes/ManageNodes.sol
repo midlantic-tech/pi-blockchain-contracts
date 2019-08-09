@@ -18,9 +18,10 @@ contract ManageNodes {
     }
 
     mapping(address => MasterNode) public nodes;
-    mapping(address => mapping(address => bool)) pendingValidatorChange;
+    mapping(address => mapping(address => bool)) public pendingValidatorChange;
     mapping(uint => uint) public purchaseCommission;
     mapping(uint => uint) public sellCommission;
+
     address payable[] public nodesArray;
     uint public currentNodePrice;
     uint public sellNodePrice;
@@ -30,7 +31,7 @@ contract ManageNodes {
     address payable emisorAddress;
     address rewardsAddress;
     BaseOwnedSet validatorSet;
-    uint blockSecond;
+    uint public blockSecond;
 
     modifier isNode(address _someone) {
         require(nodes[_someone].isValidator || nodes[_someone].isHolder);
@@ -42,7 +43,11 @@ contract ManageNodes {
         _;
     }
 
+    event PurchaseNode(address indexed buyer, uint price, uint fromDay);
+    event SellNode(address indexed seller, uint price);
     event CurrentNodeValue(uint, uint);
+    event PendingValidatorChange(address indexed, address indexed);
+    event ExecutedValidatorChange(address indexed, address indexed);
 
     constructor (address payable[] memory initialValidators) public {
         globalIndex = 1;
@@ -122,6 +127,7 @@ contract ManageNodes {
         globalIndex++;
         emisorAddress.transfer(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]));
         updateNodePrice();
+        emit PurchaseNode(msg.sender, msg.value, nodes[msg.sender].fromDay);
     }
 
     /// @dev Sell the node you own
@@ -134,6 +140,7 @@ contract ManageNodes {
         emisorAddress.transfer(sellCommission[sellNodePrice].sub(sellNodePrice));
         nodes[msg.sender].isHolder = false;
         updateNodePrice();
+        emit SellNode(msg.sender, sellNodePrice);
     }
 
     /// @dev Ballot contract call this function when there is successful ballot to allow the change of validator
@@ -142,6 +149,7 @@ contract ManageNodes {
     function changeValidatorsPending(address _oldValidator, address _newValidator) public isNode(_oldValidator) isNotNode(_newValidator) {
         require(msg.sender == address(0x0000000000000000000000000000000000000013));
         pendingValidatorChange[_oldValidator][_newValidator] = true;
+        emit PendingValidatorChange(_oldValidator, _newValidator);
     }
 
     /// @dev Execute a pending validators change
@@ -162,6 +170,7 @@ contract ManageNodes {
         validatorSet.addValidator(msg.sender);
         pendingValidatorChange[_oldValidator][msg.sender] = false;
         _oldValidator.transfer(nodes[_oldValidator].payedPrice);
+        emit ExecutedValidatorChange(_oldValidator, msg.sender);
     }
 
     /// @dev Update node's price when somebody buy/sell a node
