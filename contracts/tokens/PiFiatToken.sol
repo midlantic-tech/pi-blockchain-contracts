@@ -1,6 +1,6 @@
 pragma solidity 0.5.0;
 
-import "../utils/safeMath.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/SafeMath.sol
+import "../utils/safeMath.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/safeMath.sol
 import "./IRC223.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
 import "./IERC20.sol"; //https://github.com/Dexaran/ERC223-token-standard/blob/master/token/ERC223/ERC223_interface.sol
 import "./ERC223_receiving_contract.sol";

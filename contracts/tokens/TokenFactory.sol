@@ -10,7 +10,7 @@ contract TokenFactory is Owned {
     uint public price;
     address[] public tokens;
 
-    event TokenCreated(address indexed _address, string name, string indexed symbol, address owner, uint initialSupply, string utf8Symbol);
+    event TokenCreated(address indexed _address, string name, string symbol, address owner, uint initialSupply, string utf8Symbol);
 
     constructor (uint _price) public {
         price = _price;
