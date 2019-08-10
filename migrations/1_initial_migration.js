@@ -1,5 +1,5 @@
-const SafeMath = artifacts.require("SafeMath");
+const Migrations = artifacts.require("Migrations");
 
 module.exports = function(deployer) {
-  deployer.deploy(SafeMath);
+  deployer.deploy(Migrations);
 };
