@@ -36,9 +36,7 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      - run:
-        name: Start Testnet container
-        command: cd testnet/ && docker-compose up -d
+      - run: cd testnet/ && docker-compose up -d
 
       # run tests!
       - run: npm test
