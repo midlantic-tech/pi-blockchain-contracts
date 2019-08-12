@@ -17,7 +17,7 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/pi-blockchain-contracts
+    working_directory: ~/repo
 
     steps:
       #- run:
@@ -40,7 +40,7 @@ jobs:
       #    name: Build service
       #    command: make
 
-      - run: ls ~/pi-blockchain-contracts/
+      - run: ls -l ~/
 
       # Download and cache dependencies
       - restore_cache:
