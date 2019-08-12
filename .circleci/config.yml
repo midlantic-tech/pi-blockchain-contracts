@@ -40,7 +40,7 @@ jobs:
       #    name: Build service
       #    command: make
 
-      - run: ls /home/circleci/
+      - run: ls /home/circleci/project/
 
       # Download and cache dependencies
       - restore_cache:
