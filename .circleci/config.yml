@@ -29,16 +29,16 @@ jobs:
       #      tar -xz -C /tmp -f /tmp/docker-$VER.tgz
       #      mv /tmp/docker/* /usr/bin
 
-      - run:
-          name: Install Docker Compose
-          command: |
-            set -x
-            sudo curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
+      #- run:
+      #    name: Install Docker Compose
+      #    command: |
+      #      set -x
+      #      sudo curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+      #      sudo chmod +x /usr/local/bin/docker-compose
 
-      - run:
-          name: Build service
-          command: make
+      #- run:
+      #    name: Build service
+      #    command: make
 
       # Download and cache dependencies
       - restore_cache:
