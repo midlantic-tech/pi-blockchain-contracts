@@ -40,7 +40,7 @@ jobs:
       #    name: Build service
       #    command: make
 
-      - run: ls -l ~/
+      - run: ls -l ~/repo
 
       # Download and cache dependencies
       - restore_cache:
