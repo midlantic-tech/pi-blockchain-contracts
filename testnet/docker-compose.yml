@@ -1,0 +1,12 @@
+version: "2.0"
+services:
+  parity:
+    container_name: "parity_node"
+    image: parity/parity:v2.5.5-stable
+    volumes: 
+      - ./hostFiles:/nodeConfig
+    ports:
+      - "127.0.0.1:8545:8545"
+      - "30303:30303"
+    command:
+      --config /nodeConfig/node0.toml

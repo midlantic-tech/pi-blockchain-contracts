@@ -9,14 +9,13 @@ const account2 = "0x41592fabe9d48ad34decb858f4483dd17449e1c3";
 
 contract("PiFiatToken", async (accounts) => {
 
-  it("initial Balance should be 0", async () => {
+  it("initial Balance should be 1000000000000000000000000000000 Wei for owner", async () => {
     let balance = await instance.methods.balanceOf(account1).call();
-    expect(balance).to.equal('0');
+    expect(balance).to.equal('1000000000000000000000000000000');
   });
 
-  it("initial Balance should be 100000000000000000000000000000 Wei for owner", async () => {
-    let owner = "0x620cfb374904a689e557c4f2c079d1f1025b779c"
-    let balance = await instance.methods.balanceOf(owner).call();
-    expect(balance).to.equal('100000000000000000000000000000');
+  it("initial Balance should be 0 for acc2", async () => {
+    let balance = await instance.methods.balanceOf(account2).call();
+    expect(balance).to.equal('0');
   });
 });
