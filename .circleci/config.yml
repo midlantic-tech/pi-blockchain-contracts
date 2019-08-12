@@ -40,7 +40,8 @@ jobs:
 
       - run: cd testnet/ && docker-compose up -d
 
-      - run: node scripts/waitForEthSync.js
+      #- run: node scripts/waitForEthSync.js
+      - run: sh scripts/sleep.sh 600
 
       # run tests!
       - run: npm test
