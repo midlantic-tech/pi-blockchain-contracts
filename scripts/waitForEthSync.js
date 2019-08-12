@@ -1,4 +1,5 @@
 const Web3 = require('web3')
+
 attemptConnection('http://127.0.0.1:8545').then(waitForSync).catch(console.log)
 
 function attemptConnection(uri){
@@ -27,7 +28,7 @@ function attemptConnection(uri){
 
 var firstPass = true
 async function waitForSync(web3) {
-    console.log(web3.version);
+    web3.eth.net.isListenning().then(console.log)
     let connected = await web3.eth.net.isListenning();
     let sync = await web3.eth.isSyncing();
     let block = await web3.eth.getBlockNumber();
