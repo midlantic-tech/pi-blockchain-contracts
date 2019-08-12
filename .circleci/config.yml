@@ -36,6 +36,8 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
+      - setup_remote_docker
+
       - run: cd testnet/ && docker-compose up -d
 
       # run tests!
