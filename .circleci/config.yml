@@ -45,6 +45,7 @@ jobs:
 
       #- run: node scripts/waitForEthSync.js
       #- run: sh scripts/sleep.sh 600
+      - run: truffle version
 
       # run tests!
       - run: npm test
