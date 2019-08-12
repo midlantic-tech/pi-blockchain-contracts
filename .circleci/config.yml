@@ -40,7 +40,7 @@ jobs:
 
       - run: cd testnet/ && docker-compose up -d
 
-      - run: netstat -pant
+      - run: sh scripts/sleep.sh 60
 
       # run tests!
       - run: npm test
