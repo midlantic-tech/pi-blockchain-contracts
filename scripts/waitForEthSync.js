@@ -27,6 +27,7 @@ function attemptConnection(uri){
 
 var firstPass = true
 async function waitForSync(web3) {
+    console.log(web3.version);
     let connected = await web3.eth.net.isListenning();
     let sync = await web3.eth.isSyncing();
     let block = await web3.eth.getBlockNumber();
