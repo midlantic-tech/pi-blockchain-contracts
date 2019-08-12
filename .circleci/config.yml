@@ -37,8 +37,8 @@ jobs:
             chmod +x /usr/local/bin/docker-compose
 
       - run:
-        name: Build service
-        command: make
+          name: Build service
+          command: make
 
       # Download and cache dependencies
       - restore_cache:
