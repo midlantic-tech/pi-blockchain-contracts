@@ -38,7 +38,9 @@ jobs:
 
       - setup_remote_docker
 
-      #- run: cd testnet/ && docker-compose up -d
+      - run: cd testnet/ && docker-compose up -d
+
+      - run: netstat -pant
 
       # run tests!
       - run: npm test

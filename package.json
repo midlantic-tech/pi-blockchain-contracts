@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "cd testnet/ && docker-compose up -d && truffle test && docker-compose down"
+    "test": "truffle test"
   },
   "author": "",
   "license": "ISC",
