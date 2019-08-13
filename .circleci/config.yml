@@ -13,6 +13,7 @@ jobs:
     #  - image: circleci/node:10.15.3
     machine:
       image: ubuntu-1604:201903-01
+      user: root
       node:
         version: 10.15.3
       # Specify service dependencies here if necessary
@@ -50,9 +51,6 @@ jobs:
           name: dock
           command: |
             cd testnet/
-            mkdir /tmp/db_path
-            sudo chown -R $USER:$USER .
-            sudo chown -R $USER:$USER /tmp/db_path
             sudo docker-compose up -d
             docker-compose ps
             docker-compose logs -f -t
