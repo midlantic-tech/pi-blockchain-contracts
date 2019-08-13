@@ -46,7 +46,16 @@ jobs:
       #- run: node scripts/waitForEthSync.js
       #- run: sh scripts/sleep.sh 600
       #- run: npm install truffle@5.0.22
-      - run: nvm install 10.15.3
+
+      - run:
+          name: Install node@v10.15.3
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v10.15.3
+            nvm alias default v10.15.3
+            node -v
+
       - run: npm -v
       - run: node -v
       - run: truffle version
