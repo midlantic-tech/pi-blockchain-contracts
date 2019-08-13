@@ -1,6 +1,6 @@
 const Web3 = require('web3')
 
-attemptConnection('http://0.0.0.0:8545').then(waitForSync).catch(console.log)
+attemptConnection('http://testnet:8545').then(waitForSync).catch(console.log)
 
 function attemptConnection(uri){
     return new Promise((resolve, reject) => {

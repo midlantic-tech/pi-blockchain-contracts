@@ -50,14 +50,14 @@ jobs:
       - run:
           name: Run tests
           command: |
-            cd testnet/ && docker-compose up -d
+            cd testnet/ && docker-compose up -d --project-name testnet
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install v10.15.3
             nvm alias default v10.15.3
             node -v
             npm install truffle@5.0.22
-            truffle test
+            node scripts/waitForEthSync.js
 
       # run tests!
       - run: npm test
