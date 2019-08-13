@@ -10,8 +10,8 @@ jobs:
         - develop
     docker:
       # specify the version you desire here
-      image: circleci/node:10.15.3
-      user: root
+      - image: circleci/node:10.15.3
+      #- user: root
     #machine:
     #  image: ubuntu-1604:201903-01
     #  user: root
@@ -49,7 +49,7 @@ jobs:
       #- run: sh scripts/sleep.sh 600
       - run: node -v
       - run: npm install truffle@5.0.22
-      - run: truffle test
+      - run: truffle
       #- run:
       #    name: dock
       #    command: |
