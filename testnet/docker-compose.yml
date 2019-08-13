@@ -3,6 +3,7 @@ services:
   parity:
     container_name: "parity_node"
     image: parity/parity:v2.5.5-stable
+    user: root
     volumes:
       - ./hostFiles:/nodeConfig
     ports:
