@@ -10,8 +10,8 @@ jobs:
         - develop
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.15.3
-      - user: root
+      image: circleci/node:10.15.3
+      user: root
     #machine:
     #  image: ubuntu-1604:201903-01
     #  user: root
