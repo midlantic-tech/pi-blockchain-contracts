@@ -6,7 +6,7 @@ services:
     volumes:
       - ./hostFiles:/nodeConfig
     ports:
-      - "0.0.0.0:8545:0.0.0.0:8545"
+      - "8545:8545"
       - "30303:30303"
     command:
       --config /nodeConfig/node0.toml
