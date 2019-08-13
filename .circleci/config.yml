@@ -55,7 +55,7 @@ jobs:
             docker-compose ps
             docker-compose ps
             netstat -pant
-            sleep 30
+            npm install truffle@5.0.22
             truffle test
 
       - run:
