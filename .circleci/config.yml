@@ -46,6 +46,13 @@ jobs:
       #- run: node scripts/waitForEthSync.js
       #- run: sh scripts/sleep.sh 600
       #- run: npm install truffle@5.0.22
+      - run:
+          name: dock
+          command: |
+            cd testnet/ && docker-compose up -d
+            sleep 600
+            docker-compose ps
+            netstat -pant
 
       - run:
           name: Run tests
