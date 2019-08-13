@@ -53,10 +53,10 @@ jobs:
             cd testnet/
             sudo docker-compose up -d
             docker-compose ps
-            docker-compose logs -f -t
-            sleep 300
             docker-compose ps
             netstat -pant
+            sleep 30
+            truffle test
 
       - run:
           name: Run tests
