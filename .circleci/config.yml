@@ -51,6 +51,8 @@ jobs:
           command: |
             cd testnet/
             mkdir /tmp/db_path
+            sudo chown -R $USER:$USER .
+            sudo chown -R $USER:$USER /tmp/db_path
             sudo docker-compose up -d
             docker-compose ps
             docker-compose logs -f -t
