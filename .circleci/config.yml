@@ -51,7 +51,7 @@ jobs:
           command: |
             cd testnet/
             mkdir db_path
-            docker-compose up -d
+            sudo docker-compose up -d
             docker-compose ps
             docker-compose logs -f -t
             sleep 300
