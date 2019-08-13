@@ -8,14 +8,15 @@ jobs:
     branches:
       only:
         - develop
-    #docker:
+    docker:
       # specify the version you desire here
-    #  - image: circleci/node:10.15.3
-    machine:
-      image: ubuntu-1604:201903-01
-      user: root
-      node:
-        version: 10.15.3
+      - image: circleci/node:10.15.3
+      - user: root
+    #machine:
+    #  image: ubuntu-1604:201903-01
+    #  user: root
+    #  node:
+    #    version: 10.15.3
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -40,27 +41,29 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      #- setup_remote_docker
+      - setup_remote_docker
 
-      #- run: cd testnet/ && docker-compose up -d
+      - run: cd testnet/ && docker-compose up -d
 
       #- run: node scripts/waitForEthSync.js
       #- run: sh scripts/sleep.sh 600
-      #- run: npm install truffle@5.0.22
-      - run:
-          name: dock
-          command: |
-            cd testnet/
-            sudo docker-compose up -d
-            docker-compose ps
-            docker-compose ps
-            netstat -pant
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v10.15.3
-            nvm alias default v10.15.3
-            npm install truffle@5.0.22
-            truffle test
+      - run: node -v
+      - run: npm install truffle@5.0.22
+      - run: truffle test
+      #- run:
+      #    name: dock
+      #    command: |
+      #      cd testnet/
+      #      sudo docker-compose up -d
+      #      docker-compose ps
+      #      docker-compose ps
+      #      netstat -pant
+      #      export NVM_DIR="/opt/circleci/.nvm"
+      #      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      #      nvm install v10.15.3
+      #      nvm alias default v10.15.3
+      #      npm install truffle@5.0.22
+      #      truffle test
 
       - run:
           name: Run tests
