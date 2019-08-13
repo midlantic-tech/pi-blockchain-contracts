@@ -59,6 +59,7 @@ jobs:
             sleep 60
             npm install truffle@5.0.22
             sleep 60
+            truffle test
 
       # run tests!
       - run: npm test
