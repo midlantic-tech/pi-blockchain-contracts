@@ -57,7 +57,7 @@ jobs:
             nvm alias default v10.15.3
             node -v
             npm install truffle@5.0.22
-            npm test
+            truffle test
 
       # run tests!
       - run: npm test
