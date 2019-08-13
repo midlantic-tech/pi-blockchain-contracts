@@ -57,6 +57,8 @@ jobs:
             nvm alias default v10.15.3
             node -v
             sleep 60
+            docker-compose ps
+            netstat -pant
             npm install truffle@5.0.22
             sleep 60
             truffle test
