@@ -55,6 +55,10 @@ jobs:
             docker-compose ps
             docker-compose ps
             netstat -pant
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v10.15.3
+            nvm alias default v10.15.3
             npm install truffle@5.0.22
             truffle test
 
