@@ -9,4 +9,4 @@ services:
       - "8545:8545"
       - "30303:30303"
     command:
-      --config /nodeConfig/node0.toml --db-path db_path
+      sudo --config /nodeConfig/node0.toml --db-path db_path
