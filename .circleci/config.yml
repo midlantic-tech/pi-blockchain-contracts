@@ -48,17 +48,15 @@ jobs:
       #- run: npm install truffle@5.0.22
 
       - run:
-          name: Install node@v10.15.3
+          name: Run tests
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install v10.15.3
             nvm alias default v10.15.3
             node -v
-
-      - run: npm -v
-      - run: node -v
-      - run: truffle version
+            npm install truffle@5.0.22
+            truffle version
 
       # run tests!
       - run: npm test
