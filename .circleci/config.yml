@@ -49,7 +49,9 @@ jobs:
       - run:
           name: dock
           command: |
-            cd testnet/ && docker-compose up -d
+            cd testnet/
+            mkdir db_path
+            docker-compose up -d
             docker-compose ps
             docker-compose logs -f -t
             sleep 300
