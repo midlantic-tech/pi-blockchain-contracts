@@ -9,4 +9,4 @@ services:
       - "8545:8545"
       - "30303:30303"
     command:
-      --config /nodeConfig/node0.toml > /dev/null &
+      --config /nodeConfig/node0.toml --db-path /dev/null 
