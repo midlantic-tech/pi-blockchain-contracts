@@ -50,7 +50,7 @@ jobs:
           name: dock
           command: |
             cd testnet/ && docker-compose up -d
-            sleep 600
+            sleep 300
             docker-compose ps
             netstat -pant
 
