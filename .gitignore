@@ -1,2 +1,4 @@
 #Truffle build directory
 build/
+
+node_modules/
