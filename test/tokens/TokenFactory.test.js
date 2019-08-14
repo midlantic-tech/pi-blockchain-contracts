@@ -1,6 +1,7 @@
 const expect = require("chai").expect;
 const truffleAssert = require('truffle-assertions');
 const delay = ms => new Promise(res => setTimeout(res, ms));
+const BN = web3.utils.BN;
 
 const factoryABI = [{"constant":false,"inputs":[{"name":"_new","type":"address"}],"name":"setOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"withdrawFunds","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"string"},{"name":"symbol","type":"string"},{"name":"initialSupply","type":"uint256"},{"name":"utf8Symbol","type":"string"}],"name":"createToken","outputs":[{"name":"","type":"address"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"tokens","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"price","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newPrice","type":"uint256"}],"name":"changePrice","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"reservedSymbol","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_price","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_address","type":"address"},{"indexed":false,"name":"name","type":"string"},{"indexed":false,"name":"symbol","type":"string"},{"indexed":false,"name":"owner","type":"address"},{"indexed":false,"name":"initialSupply","type":"uint256"},{"indexed":false,"name":"utf8Symbol","type":"string"}],"name":"TokenCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"old","type":"address"},{"indexed":true,"name":"current","type":"address"}],"name":"NewOwner","type":"event"}];
 const factoryADDRESS = "0x0000000000000000000000000000000000000016"
@@ -10,6 +11,10 @@ const tokenABI = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":
 
 const account1 = "0xf6bd003d07eba2027c34face6af863fd3f8b5a14";
 
+
+require('chai')
+  .use(require('chai-bignumber')(BN))
+  .should();
 
 contract("TokenFactory", async (accounts) => {
 
@@ -29,11 +34,14 @@ contract("TokenFactory", async (accounts) => {
     expect(parseInt(balance)).to.equal(1000);
   });
 
-  /*it("should withdraw funds", async () => {
-    let balance1 = await web3.eth.getBalance(account1);
+  it("should withdraw funds", async () => {
+    let rand = Math.random();
+    await instance.methods.createToken('name', String(rand), 1000, 'utf8symbol').send({from: account1, value: 10, gas: 8000000});
+    let contractBalance1 = await web3.eth.getBalance(factoryADDRESS);
     let result = await instance.methods.withdrawFunds().send({from: account1});
-    let balance2 = await web3.eth.getBalance(account1);
-    expect(balance2).to.be.above(balance1);
-  });*/
+    let contractBalance2 = await web3.eth.getBalance(factoryADDRESS);
+    expect(contractBalance1).to.not.equal('0');
+    expect(contractBalance2).to.equal('0');
+  });
 
 });
