@@ -9,13 +9,86 @@ const account2 = "0x41592fabe9d48ad34decb858f4483dd17449e1c3";
 
 contract("PiFiatToken", async (accounts) => {
 
-  it("initial Balance should be 1000000000000000000000000000000 Wei for owner", async () => {
-    let balance = await instance.methods.balanceOf(account1).call();
-    expect(balance).to.equal('1000000000000000000000000000000');
+  it("should return token name", async () => {
+    let name = await instance.methods.name().call();
+    expect(name).to.equal('Token Bolivar');
   });
 
-  it("initial Balance should be 0 for acc2", async () => {
-    let balance = await instance.methods.balanceOf(account2).call();
-    expect(balance).to.equal('0');
+  it("should return token symbol", async () => {
+    let symbol = await instance.methods.symbol().call();
+    expect(symbol).to.equal('VESx');
+  });
+
+  it("should return token decimals", async () => {
+    let decimals = await instance.methods.decimals().call();
+    expect(decimals).to.equal('18');
+  });
+
+  it("initial Balance should be greater than 0", async () => {
+    let balance = await instance.methods.balanceOf(account1).call();
+    expect(parseInt(balance)).to.be.above(0);
+  });
+
+  it("should transfer from acc1 to acc2", async () => {
+    let value = 1;
+    let balance1a = await instance.methods.balanceOf(account1).call();
+    let balance2a = await instance.methods.balanceOf(account2).call();
+    balance1a = parseInt(balance1a);
+    balance2a = parseInt(balance2a);
+    let result = await instance.methods.transfer(account2, value).send({from: account1});
+    let balance1b = await instance.methods.balanceOf(account1).call();
+    let balance2b = await instance.methods.balanceOf(account2).call();
+    balance1b = parseInt(balance1b);
+    balance2b = parseInt(balance2b);
+    expect(balance1b).to.equal(balance1a-value);
+    expect(balance2b).to.equal(balance2a+value);
+  });
+
+  it("should approve acc1", async () => {
+    let value = 2;
+    let approved1 = await instance.methods.approved(account1, account1).call();
+    let result = await instance.methods.approve(account1, value).send({from: account1});
+    let approved2 = await instance.methods.approved(account1, account1).call();
+    expect(parseInt(approved2)).to.equal(parseInt(approved1)+value);
+  });
+
+  it("should transferFrom just value", async () => {
+    let value = 1;
+    let approved1 = await instance.methods.approved(account1, account1).call();
+    let result = await instance.methods.transferFromValue(account1, account1, value).send({from: account1});
+    let approved2 = await instance.methods.approved(account1, account1).call();
+    expect(parseInt(approved2)).to.equal(parseInt(approved1)-value);
+  });
+
+  it("should transferFrom all aproved", async () => {
+    let result = await instance.methods.transferFrom(account1, account1).send({from: account1});
+    let approved2 = await instance.methods.approved(account1, account1).call();
+    expect(parseInt(approved2)).to.equal(0);
+  });
+
+  it("should approve and then disapprove", async () => {
+    let value = 1;
+    let result = await instance.methods.approve(account1, value).send({from: account1});
+    let approved1 = await instance.methods.approved(account1, account1).call();
+    let result2 = await instance.methods.disapprove(account1).send({from: account1});
+    let approved2 = await instance.methods.approved(account1, account1).call();
+    expect(parseInt(approved1)).to.be.above(0);
+    expect(parseInt(approved2)).to.equal(0);
+  });
+
+  it("should mint amount of token", async () => {
+    let value = 100;
+    let balance1 = await instance.methods.balanceOf(account1).call();
+    let result = await instance.methods.mint(account1, value).send({from: account1});
+    let balance2 = await instance.methods.balanceOf(account1).call();
+    expect(parseInt(balance2)).to.equal(parseInt(balance1)+value);
+  });
+
+  it("should burn amount of token", async () => {
+    let value = 10;
+    let balance1 = await instance.methods.balanceOf(account1).call();
+    let result = await instance.methods.burn(value).send({from: account1});
+    let balance2 = await instance.methods.balanceOf(account1).call();
+    expect(parseInt(balance2)).to.equal(parseInt(balance1)-value);
   });
 });
