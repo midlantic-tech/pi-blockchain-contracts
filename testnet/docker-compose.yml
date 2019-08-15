@@ -3,7 +3,8 @@ services:
   parity:
     container_name: "parity_node_testnet"
     image: parity/parity:v2.5.5-stable
-    volumes: 
+    user: root
+    volumes:
       - ./hostFiles:/nodeConfig
     ports:
       - "8545:8545"
