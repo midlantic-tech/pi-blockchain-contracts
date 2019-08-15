@@ -43,5 +43,5 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install v10.15.3
             nvm alias default v10.15.3
-            docker-compose ps
+            docker-compose logs
             npm test
