@@ -1,13 +1,11 @@
 version: "2.0"
 services:
   parity:
-    container_name: "parity_node"
+    container_name: "parity_node_testnet"
     image: parity/parity:v2.5.5-stable
-    user: root
-    volumes:
+    volumes: 
       - ./hostFiles:/nodeConfig
     ports:
       - "8545:8545"
-      - "30303:30303"
     command:
       --config /nodeConfig/node0.toml
