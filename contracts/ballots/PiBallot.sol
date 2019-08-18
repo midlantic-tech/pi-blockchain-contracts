@@ -165,7 +165,7 @@ contract PiBallot {
     /// @param _ballotId identifier of the ballot
     function checkBallot (bytes32 _ballotId) internal returns(bool) {
         if (ballots[_ballotId].isAssociation) {
-            if (ballots[_ballotId].voteCount >= associationVoterCounter.div(2)) {
+            if (ballots[_ballotId].voteCount > associationVoterCounter.div(2)) {
                 ballots[_ballotId].close = true;
                 emit SuccessfulBallot(_ballotId);
                 return true;
