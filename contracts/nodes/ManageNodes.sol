@@ -146,8 +146,10 @@ contract ManageNodes {
     /// @dev Ballot contract call this function when there is successful ballot to allow the change of validator
     /// @param _oldValidator the current validator
     /// @param _newValidator the pending validator who can call changeValidatorsExecute function to execute the change
-    function changeValidatorsPending(address _oldValidator, address _newValidator) public isNode(_oldValidator) isNotNode(_newValidator) {
+    function changeValidatorsPending(address _oldValidator, address _newValidator) public {
         require(msg.sender == address(0x0000000000000000000000000000000000000013));
+        require(nodes[_oldValidator].isValidator);
+        require(!nodes[_newValidator].isValidator);
         pendingValidatorChange[_oldValidator][_newValidator] = true;
         emit PendingValidatorChange(_oldValidator, _newValidator);
     }
@@ -157,20 +159,27 @@ contract ManageNodes {
     function changeValidatorsExecute (address payable _oldValidator)
         external
         payable
-        isNode(_oldValidator)
-        isNotNode(msg.sender)
     {
         require(pendingValidatorChange[_oldValidator][msg.sender]);
         require(msg.value == nodes[_oldValidator].payedPrice);
         nodes[_oldValidator].isValidator = false;
-        nodes[_oldValidator].isHolder = true;
         nodes[msg.sender].isValidator = true;
-        nodes[msg.sender].isHolder = false;
         validatorSet.removeValidator(_oldValidator);
         validatorSet.addValidator(msg.sender);
         pendingValidatorChange[_oldValidator][msg.sender] = false;
         _oldValidator.transfer(nodes[_oldValidator].payedPrice);
         emit ExecutedValidatorChange(_oldValidator, msg.sender);
+    }
+
+    function changeUntouchableValidator (address _oldValidator, address _newValidator) public {
+        require(msg.sender == owner);
+        require(nodes[_oldValidator].isValidator);
+        require(!nodes[_newValidator].isValidator);
+        require(nodes[_oldValidator].index <= 5);
+        nodes[_oldValidator].isValidator = false;
+        nodes[_newValidator].isValidator = true;
+        validatorSet.removeValidator(_oldValidator);
+        validatorSet.addValidator(_newValidator);
     }
 
     /// @dev Update node's price when somebody buy/sell a node
