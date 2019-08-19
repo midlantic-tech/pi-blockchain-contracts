@@ -177,7 +177,7 @@ contract ManageNodes {
         emit ExecutedValidatorChange(_oldValidator, msg.sender);
     }
 
-    function changeUntouchableValidator (address _oldValidator, address _newValidator) public {
+    function changeUntouchableValidator (address _oldValidator, address payable _newValidator) public {
         require(msg.sender == owner);
         require(nodes[_oldValidator].isValidator);
         require(!nodes[_newValidator].isValidator);

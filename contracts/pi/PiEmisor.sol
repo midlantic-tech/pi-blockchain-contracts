@@ -40,7 +40,7 @@ contract PiEmisor is ERC223ReceivingContract {
     }
 
     /// @dev Receive PI and send tokens in composition
-    function managePiReceived() external payable {
+    function sellPi() external payable {
         address[] memory compositionTokenAddress;
         uint[] memory compositionTokenAmount;
         (compositionTokenAddress, compositionTokenAmount) = composition.getComposition();
