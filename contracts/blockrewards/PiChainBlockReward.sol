@@ -31,24 +31,17 @@ contract PiChainBlockReward is BlockReward, Owned {
     }
 
     address systemAddress;
-    address validatorsAddress;
     uint blockSecond;
     uint dayCommission;
     uint nodesComission;
     uint projectComission;
-    uint payPerBlock;
     address payable emisorAddress;
-    uint lastPayed;
     uint nodesValue;
     uint assigned;
     uint day;
 
     ValidatorSet validatorSet;
     ManageNodes manageNodes;
-
-    mapping(address => bool) public onlineValidators;
-    mapping(address => bool) public offlineValidators;
-    mapping(address => uint) public accumulatedCommission;
 
     mapping(uint => DayCommission) public commissionByDay;
 
@@ -63,15 +56,12 @@ contract PiChainBlockReward is BlockReward, Owned {
     	public
     {
         systemAddress = 0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE;
-        validatorsAddress = address(0);
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
         emisorAddress = address(0x0000000000000000000000000000000000000010);
         blockSecond = 100;
-        payPerBlock = 25;
         dayCommission = 0;
         nodesComission = 0;
         projectComission = 0;
-        lastPayed = 0;
         nodesValue = 0;
         assigned = 0;
         day = 0;
@@ -136,7 +126,7 @@ contract PiChainBlockReward is BlockReward, Owned {
 
             for(uint i = fromDay; i < day; i++) {
                 toPay = toPay.add(commissionByDay[i].commission.mul(payedPrice).div(commissionByDay[i].nodesValue));
-            }         
+            }
         }
 
         return toPay;
