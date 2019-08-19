@@ -54,10 +54,10 @@ contract ManageNodes {
         globalIndex = 1;
         for (uint i = 0; i < initialValidators.length; i++) {
             nodesArray.push(initialValidators[i]);
-            globalIndex++;
             nodes[initialValidators[i]].index = globalIndex;
             nodes[initialValidators[i]].isValidator = true;
             nodes[initialValidators[i]].payedPrice = 1 ether;
+            globalIndex++;
             nodesValue += 1 ether;
         }
         emisorAddress = (address(0x0000000000000000000000000000000000000010));
@@ -164,8 +164,12 @@ contract ManageNodes {
     {
         require(pendingValidatorChange[_oldValidator][msg.sender]);
         require(msg.value == nodes[_oldValidator].payedPrice);
+        nodesArray.push(msg.sender);
+        removeFromArray(_oldValidator);
         nodes[_oldValidator].isValidator = false;
         nodes[msg.sender].isValidator = true;
+        nodes[msg.sender].payedPrice = 1 ether;
+        nodes[msg.sender].fromDay = block.number.div(blockSecond);
         validatorSet.removeValidator(_oldValidator);
         validatorSet.addValidator(msg.sender);
         pendingValidatorChange[_oldValidator][msg.sender] = false;
@@ -178,8 +182,12 @@ contract ManageNodes {
         require(nodes[_oldValidator].isValidator);
         require(!nodes[_newValidator].isValidator);
         require(nodes[_oldValidator].index <= 5);
+        nodesArray.push(_newValidator);
+        removeFromArray(_oldValidator);
         nodes[_oldValidator].isValidator = false;
         nodes[_newValidator].isValidator = true;
+        nodes[_newValidator].payedPrice = 1 ether;
+        nodes[_newValidator].fromDay = block.number.div(blockSecond);
         validatorSet.removeValidator(_oldValidator);
         validatorSet.addValidator(_newValidator);
     }
