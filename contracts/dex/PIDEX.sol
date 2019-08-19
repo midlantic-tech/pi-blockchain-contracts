@@ -30,7 +30,6 @@ contract PIDEX is ERC223ReceivingContract {
     mapping(bytes32 => Order) public orders;
     mapping(address => bool) public listedTokens;
     mapping(address => uint) public salt;
-    mapping(address => mapping(address => uint)) public receivedTokens;
 
     address private _dex;
 
@@ -47,6 +46,11 @@ contract PIDEX is ERC223ReceivingContract {
         return (orders[_orderId].deals, orders[_orderId].dealsOrders, orders[_orderId].dealsAmounts);
     }
 
+    function changeDex(address newDex) public {
+        require(msg.sender == _dex);
+        _dex = newDex;
+    }
+
     /// @dev set an order selling PI
     /// @param receiving address of the token to buy
     /// @param price the price of the order
@@ -61,7 +65,7 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param receiving address of the token to buy (address(0) when buying PI)
     /// @param price the price of the order
     function setTokenOrder(address payable owner, uint amount, address receiving, uint price, uint side) public returns (bytes32) {
-        require(acceptedSender(msg.sender));
+        require(listedTokens[msg.sender]);
         bytes32 orderId = setOrder(owner, msg.sender, amount, receiving, price, side);
         return orderId;
     }
@@ -169,8 +173,7 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param _from account sending token
     /// @param _value amount of token
     function tokenFallback(address payable _from, uint _value) public {
-        require(acceptedSender(msg.sender));
-        receivedTokens[_from][msg.sender] = _value;
+        require(listedTokens[msg.sender]);
     }
 
     /// @dev Set a new order in the exchange
@@ -181,7 +184,6 @@ contract PIDEX is ERC223ReceivingContract {
     /// @param price the price of the order
     /// @return orderId identifier of the order
     function setOrder(address payable owner, address sending, uint amount, address receiving, uint price, uint side) internal returns (bytes32) {
-        require(acceptedSender(sending));
         bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, sending, receiving, amount, price, side, salt[owner])));
         require(!orders[orderId].open && !orders[orderId].cancelled && !orders[orderId].dealed);
         salt[owner]++;
@@ -209,21 +211,5 @@ contract PIDEX is ERC223ReceivingContract {
         orders[_orderId].deals.push(_dealId);
         orders[_orderId].dealsOrders.push(_matchingOrder);
         orders[_orderId].dealsAmounts.push(_amount);
-    }
-
-    /// @dev Check if the sender is accepted
-    /// @param sender address of the account calling the contract
-    function acceptedSender(address sender) internal view returns (bool) {
-        uint codeLength;
-
-        assembly {
-            // Retrieve the size of the code on target address, this needs assembly .
-            codeLength := extcodesize(sender)
-        }
-        if(codeLength>0) {
-            return listedTokens[sender];
-        } else {
-            return true;
-        }
     }
 }
