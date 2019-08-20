@@ -15,14 +15,14 @@ contract PiBallot {
         bool isFederal;
         bool isAssociation;
         bool addPending;
+        bool removePending;
         bool removeAssociation;
         bool addAssociation;
         bool validatorChangeSpecial;
         bool isClosingBallot;
         address who;
         uint change;
-        address oldLeader;
-        address newLeader;
+        address[] validatorsChange;
         bytes32 closingBallot;
         uint voteCount;
     }
@@ -100,6 +100,18 @@ contract PiBallot {
         return ballotId;
     }
 
+    function openBallotRemovePending(address tokenAddress) public returns(bytes32) {
+        require(manageNodes.isValidator(msg.sender));
+        salt++;
+        bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, tokenAddress, salt, msg.sender)));
+        ballots[ballotId].open = true;
+        ballots[ballotId].who = tokenAddress;
+        ballots[ballotId].isFederal = true;
+        ballots[ballotId].removePending = true;
+        emit BallotCreated(ballotId, msg.sender);
+        return ballotId;
+    }
+
     function openBallotAddAssociation(address newAssociation) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
@@ -132,8 +144,8 @@ contract PiBallot {
         ballots[ballotId].open = true;
         ballots[ballotId].isFederal = true;
         ballots[ballotId].validatorChangeSpecial = true;
-        ballots[ballotId].oldLeader = _oldLeader;
-        ballots[ballotId].newLeader = _newLeader;
+        ballots[ballotId].validatorsChange.push(_oldLeader);
+        ballots[ballotId].validatorsChange.push(_newLeader);
         emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
@@ -163,8 +175,8 @@ contract PiBallot {
         bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, salt, _oldLeader, _newLeader, msg.sender)));
         ballots[ballotId].open = true;
         ballots[ballotId].isAssociation = true;
-        ballots[ballotId].oldLeader = _oldLeader;
-        ballots[ballotId].newLeader = _newLeader;
+        ballots[ballotId].validatorsChange.push(_oldLeader);
+        ballots[ballotId].validatorsChange.push(_newLeader);
         emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
@@ -181,7 +193,7 @@ contract PiBallot {
         voted[_ballotId][msg.sender] = true;
         bool success = checkBallot(_ballotId);
         if (success) {
-            manageNodes.changeValidatorsPending(ballots[_ballotId].oldLeader, ballots[_ballotId].newLeader);
+            manageNodes.changeValidatorsPending(ballots[_ballotId].validatorsChange[0], ballots[_ballotId].validatorsChange[1]);
         }
     }
 
@@ -203,9 +215,11 @@ contract PiBallot {
             } else if (ballots[_ballotId].removeAssociation) {
                 removeAssociation(ballots[_ballotId].who);
             } else if (ballots[_ballotId].validatorChangeSpecial) {
-                manageNodes.changeValidatorsPending(ballots[_ballotId].oldLeader, ballots[_ballotId].newLeader);
+                manageNodes.changeValidatorsPending(ballots[_ballotId].validatorsChange[0], ballots[_ballotId].validatorsChange[1]);
             } else if (ballots[_ballotId].isClosingBallot) {
                 ballots[ballots[_ballotId].closingBallot].open = false;
+            } else if (ballots[_ballotId].removePending) {
+                emisor.removeFromComposition(ballots[_ballotId].who);
             }
         }
     }

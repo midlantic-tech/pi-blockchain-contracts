@@ -71,6 +71,12 @@ contract PiComposition {
         currentComposition.compositionTokenAmount.push(0);
     }
 
+    function removeFromComposition(address tokenAddress) public {
+        require(msg.sender == emisorAddress);
+        emisorTokenBalance[tokenAddress] = 0;
+        recalculate();
+    }
+
     /// @dev Recalculate changes of the composition of PI based on Emisor's balances and circulating PI
     function recalculate() public {
         require(msg.sender == emisorAddress);

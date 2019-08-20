@@ -65,6 +65,12 @@ contract PiEmisor is ERC223ReceivingContract {
         pendingTokens[newPendingToken].change = _change;
     }
 
+    function removeFromComposition(address tokenAddress) public {
+        require(msg.sender == address(0x0000000000000000000000000000000000000013));
+        acceptedTokens[tokenAddress] = false;
+        composition.removeFromComposition(tokenAddress);
+    }
+
     /// @dev Check if the token is accepted
     /// @param tokenAddress address of the token
     /// return bool True when accepted False when not accepted
