@@ -12,17 +12,18 @@ contract PiBallot {
 
     struct Ballot {
         bool open;
-        bool close;
         bool isFederal;
         bool isAssociation;
         bool addPending;
         bool removeAssociation;
         bool addAssociation;
         bool validatorChangeSpecial;
+        bool isClosingBallot;
         address who;
         uint change;
         address oldLeader;
         address newLeader;
+        bytes32 closingBallot;
         uint voteCount;
     }
 
@@ -138,6 +139,19 @@ contract PiBallot {
         return ballotId;
     }
 
+    function openBallotCloseBallot (bytes32 closingBallot) public returns(bytes32) {
+        require(manageNodes.isValidator(msg.sender));
+        require(ballots[closingBallot].open);
+        salt++;
+        bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, salt, closingBallot, msg.sender)));
+        ballots[ballotId].open = true;
+        ballots[ballotId].isFederal = true;
+        ballots[ballotId].isClosingBallot = true;
+        ballots[ballotId].closingBallot = closingBallot;
+        emit BallotCreated(ballotId, msg.sender);
+        return ballotId;
+    }
+
     /// @dev Association opens a ballot to change a Validator
     /// @param _oldLeader wallet of the current validator
     /// @param _newLeader wallet of the new validator
@@ -160,7 +174,7 @@ contract PiBallot {
     /// @param _ballotId identifier of the ballot
     /// @param userVote vote: True for YES
     function voteAssociation (bytes32 _ballotId, bool userVote) public {
-        require(ballots[_ballotId].open && !ballots[_ballotId].close);
+        require(ballots[_ballotId].open);
         require(associationVoter[msg.sender] && !voted[_ballotId][msg.sender]);
         if (userVote) {
             ballots[_ballotId].voteCount ++;
@@ -174,7 +188,7 @@ contract PiBallot {
 
     function voteFederal(bytes32 _ballotId, bool userVote) public {
         require(manageNodes.isValidator(msg.sender));
-        require(ballots[_ballotId].open && !ballots[_ballotId].close);
+        require(ballots[_ballotId].open);
         require(ballots[_ballotId].isFederal);
         require(!voted[_ballotId][msg.sender]);
         if (userVote) {
@@ -191,6 +205,8 @@ contract PiBallot {
                 removeAssociation(ballots[_ballotId].who);
             } else if (ballots[_ballotId].validatorChangeSpecial) {
                 manageNodes.changeValidatorsPending(ballots[_ballotId].oldLeader, ballots[_ballotId].newLeader);
+            } else if (ballots[_ballotId].isClosingBallot) {
+                ballots[ballots[_ballotId].closingBallot].open = false;
             }
         }
     }
@@ -200,7 +216,7 @@ contract PiBallot {
     function checkBallot (bytes32 _ballotId) internal returns(bool) {
         if (ballots[_ballotId].isAssociation) {
             if (ballots[_ballotId].voteCount > associationVoterCounter.div(2)) {
-                ballots[_ballotId].close = true;
+                ballots[_ballotId].open = false;
                 emit SuccessfulBallot(_ballotId);
                 return true;
             }  else {
@@ -208,7 +224,7 @@ contract PiBallot {
             }
         } else if (ballots[_ballotId].isFederal) {
             if (ballots[_ballotId].voteCount >= 7) {
-                ballots[_ballotId].close = true;
+                ballots[_ballotId].open = false;
                 emit SuccessfulBallot(_ballotId);
                 return true;
             }  else {
