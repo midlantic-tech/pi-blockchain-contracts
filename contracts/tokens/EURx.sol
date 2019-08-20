@@ -24,15 +24,14 @@ contract EURx is IRC223, IERC20, ERC223ReceivingContract {
 
     event Charge(address indexed charger, address indexed charged, uint value);
 
-    constructor(string memory name, string memory symbol, uint8 decimals, address owner, uint initialSupply) public {
-        _name = name;
-        _symbol = symbol;
-        _decimals = decimals;
+    constructor(address owner) public {
+        _name = "Token Euro";
+        _symbol = "EURx";
+        _decimals = 18;
         _owner = owner;
-        totalSupply = initialSupply;
+        totalSupply = 1000000 ether;
         emisorAddress = address(0x0000000000000000000000000000000000000010);
         balances[emisorAddress] = 1000000 ether;
-        balances[_owner] = totalSupply.sub(1000000 ether);
     }
 
     function tokenFallback(address payable _from, uint _value) public {
