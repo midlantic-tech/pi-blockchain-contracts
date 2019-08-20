@@ -127,7 +127,6 @@ contract PiBallot {
     function openBallotValidatorChangeSpecial (address _oldLeader, address _newLeader) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         uint nodeIndex = manageNodes.getNodeIndex(_oldLeader);
-        require(nodeIndex > 5);
         salt++;
         bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, salt, _oldLeader, _newLeader, msg.sender)));
         ballots[ballotId].open = true;

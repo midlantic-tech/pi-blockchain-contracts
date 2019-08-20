@@ -177,21 +177,6 @@ contract ManageNodes {
         emit ExecutedValidatorChange(_oldValidator, msg.sender);
     }
 
-    function changeUntouchableValidator (address _oldValidator, address payable _newValidator) public {
-        require(msg.sender == owner);
-        require(nodes[_oldValidator].isValidator);
-        require(!nodes[_newValidator].isValidator);
-        require(nodes[_oldValidator].index <= 5);
-        nodesArray.push(_newValidator);
-        removeFromArray(_oldValidator);
-        nodes[_oldValidator].isValidator = false;
-        nodes[_newValidator].isValidator = true;
-        nodes[_newValidator].payedPrice = 1 ether;
-        nodes[_newValidator].fromDay = block.number.div(blockSecond);
-        validatorSet.removeValidator(_oldValidator);
-        validatorSet.addValidator(_newValidator);
-    }
-
     /// @dev Update node's price when somebody buy/sell a node
     function updateNodePrice() internal {
         uint nodos = globalIndex;
