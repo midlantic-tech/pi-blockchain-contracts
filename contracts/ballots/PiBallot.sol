@@ -16,6 +16,7 @@ contract PiBallot {
         bool isFederal;
         bool isAssociation;
         bool addPending;
+        bool removeAssociation;
         bool addAssociation;
         address who;
         uint change;
@@ -46,6 +47,7 @@ contract PiBallot {
     event BallotCreated(bytes32 indexed id, address indexed creator);
     event SuccessfulBallot(bytes32 indexed id);
     event AddAssociation(address indexed newAssociation);
+    event RemoveAssociation(address indexed newAssociation);
 
     constructor () public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
@@ -108,6 +110,18 @@ contract PiBallot {
         return ballotId;
     }
 
+    function openBallotRemoveAssociation(address oldAssociation) public returns(bytes32) {
+        require(manageNodes.isValidator(msg.sender));
+        salt++;
+        bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, oldAssociation, salt, msg.sender)));
+        ballots[ballotId].open = true;
+        ballots[ballotId].who = oldAssociation;
+        ballots[ballotId].isFederal = true;
+        ballots[ballotId].removeAssociation = true;
+        emit BallotCreated(ballotId, msg.sender);
+        return ballotId;
+    }
+
     /// @dev Association opens a ballot to change a Validator
     /// @param _oldLeader wallet of the current validator
     /// @param _newLeader wallet of the new validator
@@ -155,8 +169,10 @@ contract PiBallot {
         if(success) {
             if(ballots[_ballotId].addPending) {
                 emisor.addPending(ballots[_ballotId].who, ballots[_ballotId].change);
-            } else if(ballots[_ballotId].addAssociation) {
+            } else if (ballots[_ballotId].addAssociation) {
                 addAssociation(ballots[_ballotId].who);
+            } else if (ballots[_ballotId].removeAssociation) {
+                removeAssociation(ballots[_ballotId].who);
             }
         }
     }
@@ -188,5 +204,10 @@ contract PiBallot {
     function addAssociation (address newAssociation) internal {
         isAssociation[newAssociation] = true;
         emit AddAssociation(newAssociation);
+    }
+
+    function removeAssociation (address oldAssociation) internal {
+        isAssociation[oldAssociation] = false;
+        emit RemoveAssociation(oldAssociation);
     }
 }
