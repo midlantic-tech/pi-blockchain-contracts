@@ -18,6 +18,7 @@ contract PiBallot {
         bool addPending;
         bool removeAssociation;
         bool addAssociation;
+        bool validatorChangeSpecial;
         address who;
         uint change;
         address oldLeader;
@@ -122,6 +123,21 @@ contract PiBallot {
         return ballotId;
     }
 
+    function openBallotValidatorChangeSpecial (address _oldLeader, address _newLeader) public returns(bytes32) {
+        require(manageNodes.isValidator(msg.sender));
+        uint nodeIndex = manageNodes.getNodeIndex(_oldLeader);
+        require(nodeIndex > 5);
+        salt++;
+        bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, salt, _oldLeader, _newLeader, msg.sender)));
+        ballots[ballotId].open = true;
+        ballots[ballotId].isFederal = true;
+        ballots[ballotId].validatorChangeSpecial = true;
+        ballots[ballotId].oldLeader = _oldLeader;
+        ballots[ballotId].newLeader = _newLeader;
+        emit BallotCreated(ballotId, msg.sender);
+        return ballotId;
+    }
+
     /// @dev Association opens a ballot to change a Validator
     /// @param _oldLeader wallet of the current validator
     /// @param _newLeader wallet of the new validator
@@ -173,6 +189,8 @@ contract PiBallot {
                 addAssociation(ballots[_ballotId].who);
             } else if (ballots[_ballotId].removeAssociation) {
                 removeAssociation(ballots[_ballotId].who);
+            } else if (ballots[_ballotId].validatorChangeSpecial) {
+                manageNodes.changeValidatorsPending(ballots[_ballotId].oldLeader, ballots[_ballotId].newLeader);
             }
         }
     }
@@ -189,7 +207,7 @@ contract PiBallot {
                 return false;
             }
         } else if (ballots[_ballotId].isFederal) {
-            if (ballots[_ballotId].voteCount >= 6) {
+            if (ballots[_ballotId].voteCount >= 7) {
                 ballots[_ballotId].close = true;
                 emit SuccessfulBallot(_ballotId);
                 return true;
