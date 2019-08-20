@@ -32,7 +32,6 @@ contract ManageNodes {
     address rewardsAddress;
     BaseOwnedSet validatorSet;
     uint public blockSecond;
-    address private owner;
 
     modifier isNode(address _someone) {
         require(nodes[_someone].isValidator || nodes[_someone].isHolder);
@@ -50,7 +49,7 @@ contract ManageNodes {
     event PendingValidatorChange(address indexed, address indexed);
     event ExecutedValidatorChange(address indexed, address indexed);
 
-    constructor (address payable[] memory initialValidators, address initOwner) public {
+    constructor (address payable[] memory initialValidators) public {
         globalIndex = 1;
         for (uint i = 0; i < initialValidators.length; i++) {
             nodesArray.push(initialValidators[i]);
@@ -69,7 +68,6 @@ contract ManageNodes {
         sellNodePrice = 5445000000000000000; // Sell price of the 11th value
         sellCommission[sellNodePrice] = currentNodePrice;
         blockSecond = 100;
-        owner = initOwner;
     }
 
     /// @dev Set RelaySet contract's address when deployed
