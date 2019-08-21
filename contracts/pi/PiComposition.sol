@@ -22,7 +22,7 @@ contract PiComposition {
 
     constructor() public {
         currentComposition.compositionTokenAddress.push(address(0x0000000000000000000000000000000000000014));
-        currentComposition.compositionTokenAmount.push(1 ether);
+        currentComposition.compositionTokenAmount.push(1094980000000000000);
         emisorAddress = address(0x0000000000000000000000000000000000000010);
         emisorTokenBalance[emisorAddress] = 100000 ether;
         emisorTokenBalance[address(0x0000000000000000000000000000000000000014)] = 100000 ether;

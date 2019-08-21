@@ -151,6 +151,7 @@ contract ManageNodes {
         require(nodes[_oldValidator].isValidator);
         require(!nodes[_newValidator].isValidator);
         pendingValidatorChange[_oldValidator][_newValidator] = true;
+        validatorSet.removeValidator(_oldValidator);
         emit PendingValidatorChange(_oldValidator, _newValidator);
     }
 
@@ -168,7 +169,6 @@ contract ManageNodes {
         nodes[msg.sender].isValidator = true;
         nodes[msg.sender].payedPrice = 1 ether;
         nodes[msg.sender].fromDay = block.number.div(blockSecond);
-        validatorSet.removeValidator(_oldValidator);
         validatorSet.addValidator(msg.sender);
         pendingValidatorChange[_oldValidator][msg.sender] = false;
         _oldValidator.transfer(nodes[_oldValidator].payedPrice);
