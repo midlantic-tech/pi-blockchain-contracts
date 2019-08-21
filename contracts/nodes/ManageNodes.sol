@@ -73,7 +73,7 @@ contract ManageNodes {
     /// @dev Set RelaySet contract's address when deployed
     /// @param newValidatorSetAddress Address of RelaySet
     function setValidatorSetAddress (address newValidatorSetAddress) public {
-        require(msg.sender == address(0));
+        require(address(validatorSet) == address(0));
         validatorSet = BaseOwnedSet(newValidatorSetAddress);
     }
 
