@@ -30,11 +30,14 @@ contract PIDEX is ERC223ReceivingContract {
     mapping(bytes32 => Order) public orders;
     mapping(address => bool) public listedTokens;
     mapping(address => uint) public salt;
+    mapping(address => mapping(bytes32 => uint)) public setInBlock;
 
     address private _dex;
+    uint public cancelBlocks;
 
     constructor (address dex) public {
         _dex = dex;
+        cancelBlocks = 12;
     }
 
     event SetOrder(address indexed owner, address indexed buying, address indexed selling, uint amount, uint price, bytes32 id);
@@ -49,6 +52,11 @@ contract PIDEX is ERC223ReceivingContract {
     function changeDex(address newDex) public {
         require(msg.sender == _dex);
         _dex = newDex;
+    }
+
+    function changeCancelBlocks(uint nBlocks) public {
+        require(msg.sender == _dex);
+        cancelBlocks = nBlocks;
     }
 
     /// @dev set an order selling PI
@@ -75,6 +83,7 @@ contract PIDEX is ERC223ReceivingContract {
     function cancelOrder(bytes32 orderId) public {
         require(msg.sender == orders[orderId].owner);
         require(orders[orderId].open && !orders[orderId].cancelled);
+        require(setInBlock[msg.sender][orderId].add(cancelBlocks) < block.number);
         orders[orderId].open = false;
         orders[orderId].cancelled = true;
         if(orders[orderId].sending == address(0)) {
@@ -109,41 +118,54 @@ contract PIDEX is ERC223ReceivingContract {
         } else if (side == 2) {
             require(orders[orderA].price >= orders[orderB].price);
         }
-        uint amountA;
-        uint amountB;
+        uint finalAmountA;
+        uint finalAmountB;
 
         if (orders[orderA].side == 1) {
-            amountA = orders[orderA].amount;
-            amountB = orders[orderB].amount.div(orders[orderB].price).mul(1 ether);
+            finalAmountA = orders[orderA].amount;
+            finalAmountB = orders[orderB].amount.mul(1 ether).div(orders[orderB].price);
         } else {
-            amountA = orders[orderA].amount.div(orders[orderA].price).mul(1 ether);
-            amountB = orders[orderB].amount;
+            finalAmountA = orders[orderA].amount.mul(1 ether).div(orders[orderA].price);
+            finalAmountB = orders[orderB].amount;
         }
 
         uint finalAmount;
 
-        if(amountA > amountB) {
-            finalAmount = amountB;
+        // Partial orders
+        if(finalAmountA > finalAmountB) {
+            finalAmount = finalAmountB;
         } else {
-            finalAmount = amountA;
+            finalAmount = finalAmountA;
         }
 
-        uint finalAmountA;
-        uint finalAmountB;
+        uint auxA = finalAmountA.sub(finalAmount);
+        uint auxB = finalAmountB.sub(finalAmount);
+
+        //Desnormalizamos
+        //uint finalAmountAc;
+        //uint finalAmountBc;
+        uint rest;
 
         if (orders[orderA].side == 1) {
             finalAmountA = finalAmount;
             finalAmountB = finalAmount.mul(orders[orderB].price).div(1 ether);
         } else {
-            finalAmountA = finalAmount.mul(orders[orderA].price).div(1 ether);
+            finalAmountA = finalAmount.mul(orders[orderB].price).div(1 ether);
+            rest = finalAmount.mul(orders[orderA].price).div(1 ether);
+            rest = rest.sub(finalAmountA);
             finalAmountB = finalAmount;
         }
 
         bytes32 dealId = bytes32(keccak256(abi.encodePacked(block.timestamp, orderA, orderB, orders[orderA].nonce, orders[orderB].nonce, finalAmountA, finalAmountB)));
 
-        checkDeal(orderA, orderB, finalAmountA, dealId);
-        checkDeal(orderB, orderA, finalAmountB, dealId);
 
+
+        checkDeal(orderA, orderB, finalAmountA, dealId, auxA);
+        checkDeal(orderB, orderA, finalAmountB, dealId, auxB);
+
+        //Transferir fondos
+
+        //Transferir a A
         if (orders[orderA].receiving == address(0)) {
             orders[orderA].owner.transfer(finalAmountB);
         } else {
@@ -151,6 +173,18 @@ contract PIDEX is ERC223ReceivingContract {
             token.transfer(orders[orderA].owner, finalAmountB);
         }
 
+        if (orders[orderA].sending == address(0)) {
+            if ((auxA <= 0) && (rest > 0)) {
+                orders[orderA].owner.transfer(rest);
+            }
+        } else {
+            if ((auxA <= 0) && (rest > 0)) {
+                IRC223 token = IRC223(address(orders[orderA].sending));
+                token.transfer(orders[orderA].owner, rest);
+            }
+        }
+
+        //Transferir a B
         if (orders[orderB].receiving == address(0)) {
             orders[orderB].owner.transfer(finalAmountA);
         } else {
@@ -187,6 +221,7 @@ contract PIDEX is ERC223ReceivingContract {
         bytes32 orderId = bytes32(keccak256(abi.encodePacked(block.timestamp, sending, receiving, amount, price, side, salt[owner])));
         require(!orders[orderId].open && !orders[orderId].cancelled && !orders[orderId].dealed);
         salt[owner]++;
+        setInBlock[msg.sender][orderId] = block.number;
         orders[orderId].owner = owner;
         orders[orderId].sending = sending;
         orders[orderId].receiving = receiving;
@@ -198,14 +233,17 @@ contract PIDEX is ERC223ReceivingContract {
         return orderId;
     }
 
-    function checkDeal (bytes32 _orderId, bytes32 _matchingOrder, uint _amount, bytes32 _dealId) internal {
+    function checkDeal (bytes32 _orderId, bytes32 _matchingOrder, uint _amount, bytes32 _dealId, uint _aux) internal {
         if (orders[_orderId].amount > _amount) {
             orders[_orderId].amount = orders[_orderId].amount.sub(_amount);
-        } else {
+        }
+
+        if (_aux <= 0) {
             orders[_orderId].amount = 0;
             orders[_orderId].open = false;
             orders[_orderId].close = true;
         }
+
         orders[_orderId].nonce ++;
         orders[_orderId].dealed = true;
         orders[_orderId].deals.push(_dealId);
