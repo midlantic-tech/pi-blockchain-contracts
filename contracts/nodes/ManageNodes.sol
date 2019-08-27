@@ -67,7 +67,7 @@ contract ManageNodes {
         currentNodePrice = 5500000000000000000; // Value of the N-1 node
         sellNodePrice = 5445000000000000000; // Sell price of the 11th value
         sellCommission[sellNodePrice] = currentNodePrice;
-        blockSecond = 100;
+        blockSecond = 17280;
     }
 
     /// @dev Set RelaySet contract's address when deployed
