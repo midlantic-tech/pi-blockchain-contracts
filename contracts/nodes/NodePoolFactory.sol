@@ -13,7 +13,7 @@ contract NodePoolFactory is Owned {
         price = _price;
     }
 
-    function createToken(uint[] calldata prices, uint[] calldata percentages, uint _nodePricePercentage, address dex, string calldata name, string calldata symbol, string calldata utf8Symbol) external payable returns (address) {
+    function createNodePool(uint[] calldata prices, uint[] calldata percentages, uint _nodePricePercentage, address dex, string calldata name, string calldata symbol, string calldata utf8Symbol) external payable returns (address) {
         require(msg.value == price);
         NodePool nodePool = new NodePool(prices, percentages, _nodePricePercentage, dex, name, symbol);
         pools.push(address(nodePool));
