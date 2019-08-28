@@ -93,6 +93,10 @@ contract NodePool is IRC223, IERC20, Owned {
         return address(this).balance;
     }
 
+    function withdrawlFunds() public onlyOwner onlyWhenNotBought {
+        msg.sender.transfer(address(this).balance);
+    }
+
     //ERC20
     /// @dev Get the name
     /// @return _name name of the token
@@ -350,13 +354,17 @@ contract NodePool is IRC223, IERC20, Owned {
         soldPrice = price;
     }
 
-    function payOffMember(address _to, uint _value) public {
+    function payOffMember(address _to, uint _value) internal {
         if (interval > intervalByMember[msg.sender]) {
             withdrawlMemberRewards(intervalByMember[msg.sender]);
         }
 
         if (sellVoted[msg.sender]) {
             wannaSell = wannaSell.sub(_value);
+        }
+
+        if (sellVoted[_to]) {
+            wannaSell = wannaSell.add(_value);
         }
 
         intervalByMember[_to] = interval;
