@@ -48,6 +48,7 @@ contract NodePool is IRC223, IERC20, Owned {
     uint public soldPrice;
     uint public nodePricePercentage;
     uint[] public pricesArray;
+    uint public sellAmountWithdrawl;
 
     //PERCENTAGE
 
@@ -253,7 +254,7 @@ contract NodePool is IRC223, IERC20, Owned {
             msg.sender.transfer(toPay);
         }
 
-        emit MemberRewards(fromInterval, i, toPay, msg.sender);
+        emit MemberRewards(fromInterval, interval, toPay, msg.sender);
     }
 
     function seeMemberRewards(uint userInterval) public view onlyMember onlyWhenBought returns(uint) {
