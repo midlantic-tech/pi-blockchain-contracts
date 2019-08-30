@@ -48,6 +48,7 @@ contract NodePool is IRC223, IERC20, Owned {
     uint public soldPrice;
     uint public nodePricePercentage;
     uint[] public pricesArray;
+    uint public sellAmountWithdrawl;
 
     //PERCENTAGE
 
@@ -71,6 +72,15 @@ contract NodePool is IRC223, IERC20, Owned {
         _;
     }
 
+    event PurchaseNode(uint price);
+    event NodeRewards(uint indexed interval, uint rewards, address sender);
+    event MemberRewards(uint indexed fromInterval, uint indexed toInterval, uint toPay, address indexed sender);
+    event VoteSell(address indexed sender, uint balance, uint wannaSell);
+    event VoteNotSell(address indexed sender, uint balance, uint wannaSell);
+    event SellWithdrawl(address indexed sender, uint amount);
+    event SellNode(uint nodeValue, uint currentPercentage, uint requiredPercentage);
+    event DeadContract(address killer);
+
     constructor(uint[] memory prices, uint[] memory percentages, uint _nodePricePercentage, address dex, string memory name, string memory symbol) public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
         nodeRewards = PiChainBlockReward(address(0x0000000000000000000000000000000000000009));
@@ -85,19 +95,24 @@ contract NodePool is IRC223, IERC20, Owned {
         nodePricePercentage = _nodePricePercentage;
     }
 
+    /// @dev Payable function to receive funds
     function () external payable {
 
     }
 
+    /// @dev Function to see the contract's balance in PI
+    /// return uint Contract's balance
     function contractBalance() public view returns(uint) {
         return address(this).balance;
     }
 
+    /// @dev Function for the owner to withdrawl funds if can't buy the node
     function withdrawlFunds() public onlyOwner onlyWhenNotBought {
         msg.sender.transfer(address(this).balance);
     }
 
     //ERC20
+
     /// @dev Get the name
     /// @return _name name of the token
     function name() public view returns (string memory){
@@ -158,7 +173,7 @@ contract NodePool is IRC223, IERC20, Owned {
         return orderId;
     }
 
-    /// @dev Transfer token
+    /// @dev Transfer token and pay off rewards, interval and sell vote of both parties
     /// @param _to account receiving the token
     /// @param _value amount of token to send
     function transfer(address _to, uint _value) public onlyWhenBought {
@@ -192,6 +207,8 @@ contract NodePool is IRC223, IERC20, Owned {
     }
 
     //NODE
+
+    /// @dev Function to purchase the node in ManageNodes contract
     function purchaseNode() public onlyOwner onlyWhenNotBought {
         uint price = manageNodes.purchaseNodePrice();
         manageNodes.purchaseNode.value(price)();
@@ -200,13 +217,17 @@ contract NodePool is IRC223, IERC20, Owned {
         balances[msg.sender] = totalSupply;
         msg.sender.transfer(address(this).balance);
         calculateFunctions(price);
+        emit PurchaseNode(price);
     }
 
+    /// @dev Function to withdrawl the rewards of the node and store in the contract
+    /// @param fromDay Used when the rewards haven't been withdrawl for a long time
     function withdrawlNodeRewards(uint fromDay) public onlyMember onlyWhenBought {
         nodeRewards.withdrawRewards(fromDay);
         intervalReward[interval] = address(this).balance.sub(assigned);
         assigned = assigned.add(intervalReward[interval]);
         interval++;
+        emit NodeRewards(interval.sub(1), intervalReward[interval.sub(1)], msg.sender);
     }
 
     function seeNodeRewards(uint fromDay) public view onlyMember onlyWhenBought returns (uint) {
@@ -232,6 +253,8 @@ contract NodePool is IRC223, IERC20, Owned {
         if (msg.sender != dexAddress) {
             msg.sender.transfer(toPay);
         }
+
+        emit MemberRewards(fromInterval, interval, toPay, msg.sender);
     }
 
     function seeMemberRewards(uint userInterval) public view onlyMember onlyWhenBought returns(uint) {
@@ -253,7 +276,13 @@ contract NodePool is IRC223, IERC20, Owned {
 
     function withdrawlSellPrice() public onlyMember onlyWhenSold {
         msg.sender.transfer(soldPrice.mul(balances[msg.sender]).div(totalSupply));
+        sellAmountWithdrawl = sellAmountWithdrawl.add(balances[msg.sender]);
+        emit SellWithdrawl(msg.sender, soldPrice.mul(balances[msg.sender]).div(totalSupply));
         balances[msg.sender] = 0;
+
+        if (sellAmountWithdrawl == totalSupply) {
+            emit DeadContract(msg.sender);
+        }
     }
 
     //SELL
@@ -266,12 +295,14 @@ contract NodePool is IRC223, IERC20, Owned {
         wannaSell = wannaSell.add(balances[msg.sender]);
         sellVoted[msg.sender] = true;
         checkSell();
+        emit VoteSell(msg.sender, balances[msg.sender], wannaSell);
     }
 
     function voteNotSell() public onlyMember onlyWhenBought {
         require(sellVoted[msg.sender]);
         wannaSell = wannaSell.sub(balances[msg.sender]);
         sellVoted[msg.sender] = false;
+        emit VoteNotSell(msg.sender, balances[msg.sender], wannaSell);
     }
 
     function getRequiredPercentage() public view returns (uint, uint) {
@@ -344,6 +375,7 @@ contract NodePool is IRC223, IERC20, Owned {
 
         if (currentPercentage >= requiredPercentage) {
             sellNode();
+            emit SellNode(nodeValue, currentPercentage, requiredPercentage);
         }
     }
 
