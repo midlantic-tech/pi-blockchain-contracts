@@ -56,6 +56,8 @@ contract PiBallot {
         emisor = PiEmisor(address(0x0000000000000000000000000000000000000010));
     }
 
+    /// @dev Association adds a new member
+    /// @param newAssociationMember address of the new member
     function addAssociationMember(address newAssociationMember) public {
         require(isAssociation[msg.sender]);
         associationVoter[newAssociationMember] = true;
@@ -63,6 +65,8 @@ contract PiBallot {
         emit AddAssociationMember(newAssociationMember, msg.sender);
     }
 
+    /// @dev Association removes a new member
+    /// @param oldAssociationMember address of the member to remove
     function removeAssociationMember(address oldAssociationMember) public {
         require(isAssociation[msg.sender]);
         associationVoter[oldAssociationMember] = false;
@@ -87,6 +91,10 @@ contract PiBallot {
         voted[proposalId][msg.sender] = true;
     }
 
+    /// @dev Federation opens a ballot to include a new token in Emisor's composition
+    /// @param tokenAddress Address of the token to inlcuide
+    /// @param change Initial conversion Token/Pi
+    /// @return ballotId identifier of the Ballot
     function openBallotAddPending(address tokenAddress, uint change) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
@@ -100,6 +108,9 @@ contract PiBallot {
         return ballotId;
     }
 
+    /// @dev Federation opens a ballot to remove a token from Emisor's composition
+    /// @param tokenAddress Address of the token to remove
+    /// @return ballotId identifier of the Ballot
     function openBallotRemovePending(address tokenAddress) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
@@ -112,6 +123,9 @@ contract PiBallot {
         return ballotId;
     }
 
+    /// @dev Federation opens a ballot to add a new Association
+    /// @param newAssociation Address of the new association
+    /// @return ballotId identifier of the Ballot
     function openBallotAddAssociation(address newAssociation) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
@@ -124,6 +138,9 @@ contract PiBallot {
         return ballotId;
     }
 
+    /// @dev Federation opens a ballot to remove an Association
+    /// @param oldAssociation Address of the association to remove
+    /// @return ballotId identifier of the Ballot
     function openBallotRemoveAssociation(address oldAssociation) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         salt++;
@@ -136,6 +153,10 @@ contract PiBallot {
         return ballotId;
     }
 
+    /// @dev Federation opens a ballot to change a Validator (emergency)
+    /// @param _oldLeader wallet of the current validator
+    /// @param _newLeader wallet of the new validator
+    /// @return ballotId identifier of the Ballot
     function openBallotValidatorChangeSpecial (address _oldLeader, address _newLeader) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         uint nodeIndex = manageNodes.getNodeIndex(_oldLeader);
@@ -150,6 +171,9 @@ contract PiBallot {
         return ballotId;
     }
 
+    /// @dev Federation opens a ballot to close another ballot (emergency)
+    /// @param closingBallot ID of the ballot to close
+    /// @return ballotId identifier of the Ballot
     function openBallotCloseBallot (bytes32 closingBallot) public returns(bytes32) {
         require(manageNodes.isValidator(msg.sender));
         require(ballots[closingBallot].open);
@@ -197,6 +221,9 @@ contract PiBallot {
         }
     }
 
+    /// @dev Members of Federation vote for a certain Ballot
+    /// @param _ballotId identifier of the ballot
+    /// @param userVote vote: True for YES
     function voteFederal(bytes32 _ballotId, bool userVote) public {
         require(manageNodes.isValidator(msg.sender));
         require(ballots[_ballotId].open);
@@ -246,13 +273,15 @@ contract PiBallot {
         }
     }
 
-    /// @dev Add a Association with its members
+    /// @dev Add an Association
     /// @param newAssociation wallet of the Association
     function addAssociation (address newAssociation) internal {
         isAssociation[newAssociation] = true;
         emit AddAssociation(newAssociation);
     }
 
+    /// @dev Remove an association 
+    /// @param oldAssociation Association to remove
     function removeAssociation (address oldAssociation) internal {
         isAssociation[oldAssociation] = false;
         emit RemoveAssociation(oldAssociation);
