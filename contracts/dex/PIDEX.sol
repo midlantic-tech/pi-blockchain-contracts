@@ -44,16 +44,25 @@ contract PIDEX is ERC223ReceivingContract {
     event CancelOrder(address indexed owner, address indexed buying, address indexed selling, uint amount, uint price, bytes32 id);
     event Deal(bytes32 indexed id, bytes32 orderA, bytes32 orderB);
 
+    /// @dev Get deal info of an order
+    /// @param _orderId Id of the order to get info from
+    /// @return deals Id of the deals of the order
+    /// @return dealsOrders Id of the matched orders
+    /// @return dealsAmounts Amounts dealed with each order
     function getDeals(bytes32 _orderId) public view returns (bytes32[] memory, bytes32[] memory, uint[] memory) {
         require(orders[_orderId].dealed);
         return (orders[_orderId].deals, orders[_orderId].dealsOrders, orders[_orderId].dealsAmounts);
     }
 
+    /// @dev Function used to change the address with privileges
+    /// @param newDex Address of the new wallet with privileges
     function changeDex(address newDex) public {
         require(msg.sender == _dex);
         _dex = newDex;
     }
 
+    /// @dev Change the number of blocks to wait until cancelOrder is available
+    /// @param nBlocks New number of blocks
     function changeCancelBlocks(uint nBlocks) public {
         require(msg.sender == _dex);
         cancelBlocks = nBlocks;
@@ -141,9 +150,7 @@ contract PIDEX is ERC223ReceivingContract {
         uint auxA = finalAmountA.sub(finalAmount);
         uint auxB = finalAmountB.sub(finalAmount);
 
-        //Desnormalizamos
-        //uint finalAmountAc;
-        //uint finalAmountBc;
+        //Undo conversion
         uint rest;
 
         if (orders[orderA].side == 1) {
@@ -163,9 +170,9 @@ contract PIDEX is ERC223ReceivingContract {
         checkDeal(orderA, orderB, finalAmountA, dealId, auxA);
         checkDeal(orderB, orderA, finalAmountB, dealId, auxB);
 
-        //Transferir fondos
+        //Transfer funds
 
-        //Transferir a A
+        //Transfer A
         if (orders[orderA].receiving == address(0)) {
             orders[orderA].owner.transfer(finalAmountB);
         } else {
@@ -184,7 +191,7 @@ contract PIDEX is ERC223ReceivingContract {
             }
         }
 
-        //Transferir a B
+        //Transfer B
         if (orders[orderB].receiving == address(0)) {
             orders[orderB].owner.transfer(finalAmountA);
         } else {
@@ -233,6 +240,12 @@ contract PIDEX is ERC223ReceivingContract {
         return orderId;
     }
 
+    /// @dev Check and update final state of an order after deal
+    /// @param _orderId Id of the order to check
+    /// @param _matchingOrder The matching order
+    /// @param _amount Dealed amount
+    /// @param _dealId Identifier of the deal
+    /// @param _aux Aux param to close order or not 
     function checkDeal (bytes32 _orderId, bytes32 _matchingOrder, uint _amount, bytes32 _dealId, uint _aux) internal {
         if (orders[_orderId].amount > _amount) {
             orders[_orderId].amount = orders[_orderId].amount.sub(_amount);
