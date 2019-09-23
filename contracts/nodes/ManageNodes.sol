@@ -2,6 +2,7 @@ pragma solidity 0.5.0;
 
 import "../utils/safeMath.sol";
 import "../validators/RelayedOwnedSet.sol";
+import "../pi/PiEmisor.sol";
 
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract designed to handle node's market
@@ -28,7 +29,7 @@ contract ManageNodes {
     uint public purchaseNodePrice;
     uint public nodesValue;
     uint public globalIndex;
-    address payable emisorAddress;
+    PiEmisor emisorAddress;
     address rewardsAddress;
     RelayedOwnedSet validatorSet;
     uint public blockSecond;
@@ -59,7 +60,7 @@ contract ManageNodes {
             globalIndex++;
             nodesValue += 1 ether;
         }
-        emisorAddress = (address(0x0000000000000000000000000000000000000010));
+        emisor = PiEmisor(address(0x0000000000000000000000000000000000000010));
         rewardsAddress = (address(0x0000000000000000000000000000000000000009));
         currentNodePrice = 6600000000000000000; // Value of the 11th node
         purchaseNodePrice = 6666000000000000000; // Purchase price of the 11th value
@@ -128,7 +129,7 @@ contract ManageNodes {
     /// @dev Check if a node can withdrawl rewards of a certain day
     /// @param _node Address of the node
     /// @param day Day
-    /// @return Boolean True/False if Can/Cannot withdrawl 
+    /// @return Boolean True/False if Can/Cannot withdrawl
     function isRewarded(address _node, uint day) public view returns (bool) {
         return (((nodes[_node].isValidator) || (nodes[_node].isHolder)) && (day > nodes[_node].fromDay));
     }
@@ -143,7 +144,7 @@ contract ManageNodes {
         nodes[msg.sender].isHolder = true;
         nodes[msg.sender].fromDay = block.number.div(blockSecond);
         globalIndex++;
-        emisorAddress.transfer(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]));
+        emisor.removeCirculating.value(purchaseNodePrice.sub(purchaseCommission[purchaseNodePrice]))();
         updateNodePrice();
         emit PurchaseNode(msg.sender, msg.value, nodes[msg.sender].fromDay);
     }
@@ -155,7 +156,7 @@ contract ManageNodes {
         globalIndex--;
         nodesValue = nodesValue.sub(sellCommission[sellNodePrice]);
         msg.sender.transfer(sellNodePrice);
-        emisorAddress.transfer(sellCommission[sellNodePrice].sub(sellNodePrice));
+        emisor.removeCirculating.value(sellCommission[sellNodePrice].sub(sellNodePrice))();
         nodes[msg.sender].isHolder = false;
         updateNodePrice();
         emit SellNode(msg.sender, sellNodePrice);

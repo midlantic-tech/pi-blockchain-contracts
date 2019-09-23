@@ -34,9 +34,10 @@ contract PiEmisor is ERC223ReceivingContract {
         rewards = address(0x0000000000000000000000000000000000000009);
     }
 
-    /// @dev Fallback function to remove circulating
-    function () external payable {
-
+    /// @dev Function to remove circulating
+    function removeCirculating() external payable {
+      composition.modifyBalance(address(this), msg.value, false):
+      composition.recalculate();
     }
 
     /// @dev Receive PI and send tokens in composition
