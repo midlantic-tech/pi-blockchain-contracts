@@ -83,14 +83,22 @@ contract ManageNodes {
         return nodesArray;
     }
 
+    /// @dev Check if an address is a validator or not
+    /// @param _node Address to check
+    /// @return isValidator Boolean True if is Validator, False if not
     function isValidator(address _node) public view returns(bool) {
         return nodes[_node].isValidator;
     }
 
+    /// @dev Get the index in the array of a node
+    /// @param _node Address to check
+    /// @return Index in the array
     function getNodeIndex(address _node) public view returns(uint) {
         return nodes[_node].index;
     }
 
+    /// @dev Cummulated value of the nodes
+    /// @return nodesValue Value of the nodes
     function getNodesValue() public view returns(uint) {
         return nodesValue;
     }
@@ -102,15 +110,25 @@ contract ManageNodes {
         return nodes[_node].payedPrice;
     }
 
+    /// @dev Get day of the last withdraw of node's rewards
+    /// @param _node Address of the node
+    /// @return fromDay Day number
     function getFromDay(address _node) public view returns (uint) {
         return nodes[_node].fromDay;
     }
 
+    /// @dev Modify day of the last withdraw
+    /// @param _node Address of the node
+    /// @param day New last day
     function modifyFromDay(address _node, uint day) public {
         require(msg.sender == rewardsAddress);
         nodes[_node].fromDay = day;
     }
 
+    /// @dev Check if a node can withdrawl rewards of a certain day
+    /// @param _node Address of the node
+    /// @param day Day
+    /// @return Boolean True/False if Can/Cannot withdrawl 
     function isRewarded(address _node, uint day) public view returns (bool) {
         return (((nodes[_node].isValidator) || (nodes[_node].isHolder)) && (day > nodes[_node].fromDay));
     }
