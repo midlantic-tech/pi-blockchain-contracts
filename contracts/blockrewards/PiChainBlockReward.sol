@@ -85,9 +85,6 @@ contract PiChainBlockReward is BlockReward, Owned {
             }
 
             assigned = assigned.add(dayCommission);
-            nodesComission = dayCommission.div(2);
-            projectComission = nodesComission;
-            emisorAddress.transfer(projectComission);
             commissionByDay[day].commission = nodesComission;
             commissionByDay[day].nodesValue = manageNodes.getNodesValue();
             day++;
@@ -96,6 +93,8 @@ contract PiChainBlockReward is BlockReward, Owned {
         return (benefactors, rewards);
     }
 
+    /// @dev Function used by node's owners to withdrawl rewards
+    /// @param userDay Withdrawl rewards since day with number userDay (emergency)
     function withdrawRewards(uint userDay) public {
         require(manageNodes.isRewarded(msg.sender, day));
         uint fromDay = manageNodes.getFromDay(msg.sender);
@@ -114,6 +113,9 @@ contract PiChainBlockReward is BlockReward, Owned {
         emit WithdrawRewards(msg.sender, fromDay, day, toPay);
     }
 
+    /// @dev Function used by node's owners to see pending rewards
+    /// @param userDay Rewards since day with number userDay (emergency)
+    /// @return toPay Total pending rewards
     function seeRewards(uint userDay) public view returns (uint) {
         uint toPay = 0;
 
