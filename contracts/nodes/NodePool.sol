@@ -11,7 +11,7 @@ import "../utils/safeMath.sol";
 /// @author MIDLANTIC TECHNOLOGIES
 /// @title Contract designed to manage a Pool for a node
 
-contract NodePool is IRC223, IERC20, Owned {
+contract NodePool is /*IRC223,*/ IERC20, Owned {
     using SafeMath for uint;
     using SafeMath for int;
 
@@ -80,6 +80,7 @@ contract NodePool is IRC223, IERC20, Owned {
     event SellWithdrawl(address indexed sender, uint amount);
     event SellNode(uint nodeValue, uint currentPercentage, uint requiredPercentage);
     event DeadContract(address killer);
+    event Transfer(address indexed from, address indexed to, uint value, bytes indexed data);
 
     constructor(uint[] memory prices, uint[] memory percentages, uint _nodePricePercentage, address dex, string memory name, string memory symbol) public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
@@ -142,13 +143,13 @@ contract NodePool is IRC223, IERC20, Owned {
     /// @param _value amount of token for the order
     /// @param receiving address of the token to buy (address(0) when buying PI)
     /// @param exchangeAddress address of the exchange to set the order
-    function setDexOrder(uint _value, address receiving, uint price, uint side, address exchangeAddress)
+    function setDexOrder(uint _value, address receiving, uint price, uint side, address payable exchangeAddress)
         public
         onlyWhenBought
         returns(bytes32)
     {
         require(balances[msg.sender] >= _value, "No balance");
-        address _to = address(exchangeAddress);
+        address payable _to = address(exchangeAddress);
         address payable _from = msg.sender;
         uint codeLength;
         bytes memory empty;
@@ -176,7 +177,7 @@ contract NodePool is IRC223, IERC20, Owned {
     /// @dev Transfer token and pay off rewards, interval and sell vote of both parties
     /// @param _to account receiving the token
     /// @param _value amount of token to send
-    function transfer(address _to, uint _value) public onlyWhenBought {
+    function transfer(address payable _to, uint _value) public onlyWhenBought {
         payOffMember(_to, _value);
 
         _transfer(_to, msg.sender,_value);
@@ -186,7 +187,7 @@ contract NodePool is IRC223, IERC20, Owned {
     /// @param _to account receiving the token
     /// @param _from account sending the token
     /// @param _value amount of token to send
-    function _transfer(address _to, address payable _from, uint _value) internal {
+    function _transfer(address payable _to, address payable _from, uint _value) internal {
         require(balances[_from] >= _value, "No balance");
         uint codeLength;
         bytes memory empty;
@@ -248,13 +249,36 @@ contract NodePool is IRC223, IERC20, Owned {
         }
 
         intervalByMember[msg.sender] = interval;
-        assigned = assigned.sub(toPay);
 
         if (msg.sender != dexAddress) {
+            assigned = assigned.sub(toPay);
             msg.sender.transfer(toPay);
         }
 
         emit MemberRewards(fromInterval, interval, toPay, msg.sender);
+    }
+
+    function withdrawlToRewards(uint userInterval, address payable member) public onlyMember onlyWhenBought {
+        require(interval > intervalByMember[member]);
+        uint fromInterval = intervalByMember[member];
+
+        if (userInterval > fromInterval) {
+            fromInterval = userInterval;
+        }
+
+        uint toPay = 0;
+        for(uint i = fromInterval; i < interval; i++) {
+            toPay = toPay.add(intervalReward[i].mul(balances[member]).div(totalSupply));
+        }
+
+        intervalByMember[member] = interval;
+
+        if (member != dexAddress) {
+            assigned = assigned.sub(toPay);
+            member.transfer(toPay);
+        }
+
+        emit MemberRewards(fromInterval, interval, toPay, member);
     }
 
     function seeMemberRewards(uint userInterval) public view onlyMember onlyWhenBought returns(uint) {
@@ -386,9 +410,13 @@ contract NodePool is IRC223, IERC20, Owned {
         soldPrice = price;
     }
 
-    function payOffMember(address _to, uint _value) internal {
+    function payOffMember(address payable _to, uint _value) internal {
         if (interval > intervalByMember[msg.sender]) {
             withdrawlMemberRewards(intervalByMember[msg.sender]);
+        }
+
+        if ((balances[_to] > 0) && (interval > intervalByMember[_to])) {
+            withdrawlToRewards(intervalByMember[_to], _to);
         }
 
         if (sellVoted[msg.sender]) {
