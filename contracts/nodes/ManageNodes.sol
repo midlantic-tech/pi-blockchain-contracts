@@ -29,7 +29,7 @@ contract ManageNodes {
     uint public purchaseNodePrice;
     uint public nodesValue;
     uint public globalIndex;
-    PiEmisor emisorAddress;
+    PiEmisor emisor;
     address rewardsAddress;
     RelayedOwnedSet validatorSet;
     uint public blockSecond;
