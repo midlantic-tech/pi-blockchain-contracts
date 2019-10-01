@@ -36,7 +36,7 @@ contract PiEmisor is ERC223ReceivingContract {
 
     /// @dev Function to remove circulating
     function removeCirculating() external payable {
-      composition.modifyBalance(address(this), msg.value, false):
+      composition.modifyBalance(address(this), msg.value, false);
       composition.recalculate();
     }
 
