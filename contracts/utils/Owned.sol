@@ -19,7 +19,7 @@ pragma solidity 0.5.0;
 contract Owned {
     event NewOwner(address indexed old, address indexed current);
 
-    address public owner = address(0xf6bD003d07eBA2027C34fACE6af863Fd3f8B5a14);
+    address public owner = tx.origin;
 
     modifier onlyOwner {
         require(msg.sender == owner);
