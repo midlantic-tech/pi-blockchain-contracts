@@ -163,6 +163,11 @@ contract PiFiatToken is IRC223, IERC20, ERC223ReceivingContract {
         emit Charge(_to, tx.origin, _value);
     }
 
+    function changeOwner(address newOwner) public {
+        require(msg.sender == _owner);
+        _owner = newOwner;
+    }
+
     /// @dev Transfer token
     /// @param _to account receiving the token
     /// @param _from account sending the token
