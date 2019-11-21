@@ -52,14 +52,17 @@ contract ManageNodes {
 
     constructor (address payable[] memory initialValidators) public {
         globalIndex = 1;
+
+        //Loop for the 10 validator nodes
         for (uint i = 0; i < initialValidators.length; i++) {
             nodesArray.push(initialValidators[i]);
             nodes[initialValidators[i]].index = globalIndex;
             nodes[initialValidators[i]].isValidator = true;
             nodes[initialValidators[i]].payedPrice = 1 ether;
             globalIndex++;
-            nodesValue += 1 ether;
+            nodesValue += 1 ether; //price not really payed but they cannot sell
         }
+
         emisor = PiEmisor(address(0x0000000000000000000000000000000000000010));
         rewardsAddress = (address(0x0000000000000000000000000000000000000009));
         currentNodePrice = 6600000000000000000; // Value of the 11th node
@@ -138,7 +141,7 @@ contract ManageNodes {
     function purchaseNode() external payable isNotNode(msg.sender) {
         require(msg.value == purchaseNodePrice);
         nodes[msg.sender].payedPrice = purchaseNodePrice;
-        nodesValue = nodesValue.add(purchaseCommission[purchaseNodePrice]);
+        nodesValue = nodesValue.add(purchaseNodePrice);
         nodesArray.push(msg.sender);
         nodes[msg.sender].index = globalIndex;
         nodes[msg.sender].isHolder = true;
@@ -154,7 +157,7 @@ contract ManageNodes {
         require(!nodes[msg.sender].isValidator);
         removeFromArray(msg.sender);
         globalIndex--;
-        nodesValue = nodesValue.sub(sellCommission[sellNodePrice]);
+        nodesValue = nodesValue.sub(nodes[msg.sender].payedPrice);
         msg.sender.transfer(sellNodePrice);
         emisor.removeCirculating.value(sellCommission[sellNodePrice].sub(sellNodePrice))();
         nodes[msg.sender].isHolder = false;
