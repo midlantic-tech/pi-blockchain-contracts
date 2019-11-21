@@ -37,6 +37,7 @@ contract PiBallot {
     mapping(bytes32 => Proposal) public proposals;
     mapping(address => bool) public associationVoter;
     mapping(bytes32 => mapping(address => bool)) public voted;
+    mapping(address => bool) public addedToken;
 
     uint public associationVoterCounter;
     uint public salt;
@@ -54,6 +55,7 @@ contract PiBallot {
     constructor () public {
         manageNodes = ManageNodes(address(0x0000000000000000000000000000000000000012));
         emisor = PiEmisor(address(0x0000000000000000000000000000000000000010));
+        addedToken[address(0x0000000000000000000000000000000000000014)] = true;
     }
 
     /// @dev Association adds a new member
@@ -119,6 +121,19 @@ contract PiBallot {
         ballots[ballotId].who = tokenAddress;
         ballots[ballotId].isFederal = true;
         ballots[ballotId].removePending = true;
+        emit BallotCreated(ballotId, msg.sender);
+        return ballotId;
+    }
+
+    function openBallotDecreaseAmount(address tokenAddress, uint _change) public returns(bytes32) {
+        require(manageNodes.isValidator(msg.sender));
+        salt++;
+        bytes32 ballotId = bytes32(keccak256(abi.encodePacked(block.timestamp, tokenAddress, salt, msg.sender)));
+        ballots[ballotId].open = true;
+        ballots[ballotId].who = tokenAddress;
+        ballots[ballotId].isFederal = true;
+        ballots[ballotId].removePending = true;
+        ballots[ballotId].change = _change;
         emit BallotCreated(ballotId, msg.sender);
         return ballotId;
     }
@@ -236,7 +251,12 @@ contract PiBallot {
         bool success = checkBallot(_ballotId);
         if(success) {
             if(ballots[_ballotId].addPending) {
-                emisor.addPending(ballots[_ballotId].who, ballots[_ballotId].change);
+                if (!addedToken[ballots[_ballotId].who]) {
+                    emisor.addPending(ballots[_ballotId].who, ballots[_ballotId].change);
+                    addedToken[ballots[_ballotId].who] = true;
+                } else {
+                    emisor.increaseAmount(ballots[_ballotId].who, ballots[_ballotId].change);
+                }
             } else if (ballots[_ballotId].addAssociation) {
                 addAssociation(ballots[_ballotId].who);
             } else if (ballots[_ballotId].removeAssociation) {
@@ -246,7 +266,11 @@ contract PiBallot {
             } else if (ballots[_ballotId].isClosingBallot) {
                 ballots[ballots[_ballotId].closingBallot].open = false;
             } else if (ballots[_ballotId].removePending) {
-                emisor.removeFromComposition(ballots[_ballotId].who);
+                if (ballots[_ballotId].change == 0) {
+                    emisor.removeFromComposition(ballots[_ballotId].who);
+                } else {
+                    emisor.decreaseAmount(ballots[_ballotId].who, ballots[_ballotId].change, msg.sender);
+                }
             }
         }
     }
