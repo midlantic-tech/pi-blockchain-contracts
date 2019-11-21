@@ -67,7 +67,6 @@ contract PiEmisor is ERC223ReceivingContract {
         }
         rewards.transfer(msg.value.mul(5).div(1000));
         composition.modifyBalance(address(this), msg.value.mul(995).div(1000), false);
-        circulating -= msg.value.mul(995).div(1000);
         composition.recalculate();
     }
 
@@ -162,7 +161,6 @@ contract PiEmisor is ERC223ReceivingContract {
         composition.modifyBalance(msg.sender, _value, true);
         uint piAmount = _value.mul(pendingTokens[msg.sender].change).div(1 ether);
         composition.modifyBalance(address(this), piAmount, true);
-        circulating += piAmount;
         _from.transfer(piAmount);
         composition.recalculate();
         addToken(msg.sender);
