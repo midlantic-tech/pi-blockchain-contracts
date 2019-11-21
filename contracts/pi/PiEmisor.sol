@@ -16,10 +16,22 @@ contract PiEmisor is ERC223ReceivingContract {
         uint change;
     }
 
+    struct Increase {
+        bool isIncrease;
+        uint change;
+    }
+    
+    struct Decrease {
+        bool isDecrease;
+        uint change;
+        address sender;
+    }
+
     mapping(address => bool) public acceptedTokens;
     mapping(address => Pending) public pendingTokens;
+    mapping(address => Increase) public expectingIncrease;
+    mapping(address => Decrease) public expectingDecrease;
 
-    uint public circulating;
     address payable rewards;
 
     PiComposition composition;
@@ -46,10 +58,12 @@ contract PiEmisor is ERC223ReceivingContract {
         uint[] memory compositionTokenAmount;
         (compositionTokenAddress, compositionTokenAmount) = composition.getComposition();
         for (uint i = 0; i < compositionTokenAddress.length; i++) {
-            IRC223 token = IRC223(compositionTokenAddress[i]);
-            uint amount = msg.value.mul(compositionTokenAmount[i]).div(1 ether).mul(99).div(100);
-            token.transfer(msg.sender, amount);
-            composition.modifyBalance(compositionTokenAddress[i], amount, false);
+            if (compositionTokenAmount[i] != 0) {
+                IRC223 token = IRC223(compositionTokenAddress[i]);
+                uint amount = msg.value.mul(compositionTokenAmount[i]).div(1 ether).mul(99).div(100);
+                token.transfer(msg.sender, amount);
+                composition.modifyBalance(compositionTokenAddress[i], amount, false);
+            }
         }
         rewards.transfer(msg.value.mul(5).div(1000));
         composition.modifyBalance(address(this), msg.value.mul(995).div(1000), false);
@@ -66,9 +80,34 @@ contract PiEmisor is ERC223ReceivingContract {
         pendingTokens[newPendingToken].change = _change;
     }
 
+    function increaseAmount (address tokenAddress, uint _change) public {
+        require(msg.sender == address(0x0000000000000000000000000000000000000013));
+        expectingIncrease[tokenAddress].isIncrease = true;
+        expectingIncrease[tokenAddress].change = _change;
+    }
+
+    function decreaseAmount (address tokenAddress, uint _change, address _sender) public {
+        require(msg.sender == address(0x0000000000000000000000000000000000000013));
+        expectingDecrease[tokenAddress].isDecrease = true;
+        expectingDecrease[tokenAddress].change = _change;
+        expectingDecrease[tokenAddress].sender = _sender;
+    }
+    
+    function executeDecrease (address tokenAddress) external payable {
+        require(msg.sender == expectingDecrease[tokenAddress].sender);
+        require(expectingDecrease[tokenAddress].isDecrease);
+        expectingDecrease[tokenAddress].isDecrease = false;
+        uint tokenAmount = msg.value.mul(expectingDecrease[tokenAddress].change).div(1 ether);
+        PiFiatToken token = PiFiatToken(tokenAddress);
+        require(tokenAmount <= token.balanceOf(address(this)));
+        token.transfer(msg.sender, tokenAmount);
+        composition.modifyBalance(address(this), msg.value, false);
+        composition.modifyBalance(tokenAddress, tokenAmount, false);
+        composition.recalculate();
+    }
+
     function removeFromComposition(address tokenAddress) public {
         require(msg.sender == address(0x0000000000000000000000000000000000000013));
-        acceptedTokens[tokenAddress] = false;
         composition.removeFromComposition(tokenAddress);
     }
 
@@ -86,11 +125,12 @@ contract PiEmisor is ERC223ReceivingContract {
         uint[] memory compositionTokenAmount;
         (compositionTokenAddress, compositionTokenAmount) = composition.getComposition();
         for (uint i = 0; i < compositionTokenAddress.length; i++) {
-            require(acceptedTokens[compositionTokenAddress[i]]);
-            PiFiatToken token = PiFiatToken(compositionTokenAddress[i]);
-            uint _tokenValue = _value.mul(compositionTokenAmount[i]).div(1 ether);
-            token.charge(address(this), _tokenValue);
-            composition.modifyBalance(compositionTokenAddress[i], _tokenValue, true);
+            if (compositionTokenAmount[i] != 0) {
+                PiFiatToken token = PiFiatToken(compositionTokenAddress[i]);
+                uint _tokenValue = _value.mul(compositionTokenAmount[i]).div(1 ether);
+                token.charge(address(this), _tokenValue);
+                composition.modifyBalance(compositionTokenAddress[i], _tokenValue, true);
+            }
         }
         uint piAmount = _value.mul(99).div(100); //comprobar comision
         uint commission = _value.sub(piAmount);
@@ -99,6 +139,7 @@ contract PiEmisor is ERC223ReceivingContract {
         rewards.transfer(rewardsCommission);
         composition.modifyBalance(address(this), piAmount.add(rewardsCommission), true);
         composition.recalculate();
+        emit ReceivePi(msg.sender, piAmount);
     }
 
     /// @dev Function to receive token ERC223ReceivingContract
@@ -108,6 +149,8 @@ contract PiEmisor is ERC223ReceivingContract {
         require(isAcceptedToken(msg.sender));
         if (!acceptedTokens[msg.sender]) {
             managePendingToken(_from, _value);
+        } else if (expectingIncrease[msg.sender].isIncrease) {
+            manageIncreasingToken(_from, _value);
         }
     }
 
@@ -123,6 +166,15 @@ contract PiEmisor is ERC223ReceivingContract {
         _from.transfer(piAmount);
         composition.recalculate();
         addToken(msg.sender);
+    }
+
+    function manageIncreasingToken(address payable _from, uint _value) internal {
+        composition.modifyBalance(msg.sender, _value, true);
+        uint piAmount = _value.mul(expectingIncrease[msg.sender].change).div(1 ether);
+        composition.modifyBalance(address(this), piAmount, true);
+        _from.transfer(piAmount);
+        composition.recalculate();
+        expectingIncrease[msg.sender].isIncrease = false;
     }
 
     /// @dev Token added to the composition of PI
