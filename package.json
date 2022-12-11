@@ -22,7 +22,7 @@
     "truffle": "^5.0.22",
     "bignumber": "^1.1.0",
     "bignumber.js": "^9.0.0",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "openzeppelin-test-helpers": "^0.4.2",
     "web3-net": "^1.2.1"
   }
